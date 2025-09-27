@@ -721,10 +721,10 @@
         if (mealPlanBtn) mealPlanBtn.disabled = false;
         if (ingredientCount) ingredientCount.textContent = `(${selectedFoods.length} ingredient${selectedFoods.length !== 1 ? 's' : ''})`;
       }
-
       // Save ingredients to localStorage
       localStorage.setItem('selectedIngredients', JSON.stringify(selectedFoods));
     }
+
 
      function goToMealPlan() {
       if (selectedFoods.length === 0) {
@@ -744,7 +744,7 @@
     }
 
     function goBack() {
-      window.location.replace('index.html'); // or whatever your main page is called
+      window.location.href = 'index.html'; // or whatever your main page is called
     }
   </script>
 </body>
