@@ -2,8 +2,241 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title> Camera </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Camera - Food Hackathon</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .camera-container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #video {
+      width: 100%;
+      max-width: 640px;
+      height: auto;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      background: #000;
+    }
+
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn {
+      background: linear-gradient(45deg, #00b894, #00a085);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+
+    .btn.stop {
+      background: linear-gradient(45deg, #e17055, #d63031);
+    }
+
+    .btn.capture {
+      background: linear-gradient(45deg, #fdcb6e, #e17055);
+    }
+
+    .btn.back {
+      background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+    }
+
+    .status {
+      margin-bottom: 20px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.2);
+      text-align: center;
+    }
+
+    .error {
+      background: rgba(231, 76, 60, 0.3);
+    }
+
+    .success {
+      background: rgba(46, 204, 113, 0.3);
+    }
+
+    canvas {
+      display: none;
+    }
+
+    .captured-image {
+      margin-top: 20px;
+      max-width: 300px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+  </style>
 </head>
 <body>
+  <div class="camera-container">
+    <div id="status" class="status">Click "Start Camera" to begin</div>
+
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
+
+    <div class="controls">
+      <button id="startBtn" class="btn">📷 Start Camera</button>
+      <button id="stopBtn" class="btn stop" style="display: none;">⏹️ Stop Camera</button>
+      <button id="captureBtn" class="btn capture" style="display: none;">📸 Capture Photo</button>
+      <button id="backBtn" class="btn back">⬅️ Back to Main</button>
+    </div>
+
+    <img id="capturedImage" class="captured-image" style="display: none;" />
+  </div>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const captureBtn = document.getElementById('captureBtn');
+    const backBtn = document.getElementById('backBtn');
+    const status = document.getElementById('status');
+    const capturedImage = document.getElementById('capturedImage');
+
+    let stream = null;
+
+    // Check if getUserMedia is supported
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      showStatus('Camera access is not supported by this browser', 'error');
+    }
+
+    startBtn.addEventListener('click', startCamera);
+    stopBtn.addEventListener('click', stopCamera);
+    captureBtn.addEventListener('click', capturePhoto);
+    backBtn.addEventListener('click', () => {
+      window.location.href = 'index.html'; // or whatever your main page is called
+    });
+
+    async function startCamera() {
+      try {
+        showStatus('Requesting camera access...', 'status');
+
+        // Request camera access
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: 'environment' // Use back camera on mobile if available
+          },
+          audio: false
+        });
+
+        video.srcObject = stream;
+
+        showStatus('Camera is active', 'success');
+        startBtn.style.display = 'none';
+        stopBtn.style.display = 'inline-block';
+        captureBtn.style.display = 'inline-block';
+
+      } catch (error) {
+        console.error('Error accessing camera:', error);
+        let errorMessage = 'Failed to access camera. ';
+
+        if (error.name === 'NotAllowedError') {
+          errorMessage += 'Permission denied. Please allow camera access.';
+        } else if (error.name === 'NotFoundError') {
+          errorMessage += 'No camera found on this device.';
+        } else {
+          errorMessage += error.message;
+        }
+
+        showStatus(errorMessage, 'error');
+      }
+    }
+
+    function stopCamera() {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+      }
+
+      video.srcObject = null;
+      showStatus('Camera stopped', 'status');
+
+      startBtn.style.display = 'inline-block';
+      stopBtn.style.display = 'none';
+      captureBtn.style.display = 'none';
+    }
+
+    function capturePhoto() {
+      if (!stream) return;
+
+      // Set canvas dimensions to match video
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      // Draw the video frame to canvas
+      context.drawImage(video, 0, 0);
+
+      // Convert canvas to image data URL
+      const imageDataURL = canvas.toDataURL('image/png');
+
+      // Display the captured image
+      capturedImage.src = imageDataURL;
+      capturedImage.style.display = 'block';
+
+      showStatus('Photo captured successfully!', 'success');
+
+      // You can also save or process the image here
+      // For example, send it to a server or download it
+    }
+
+    function showStatus(message, type) {
+      status.textContent = message;
+      status.className = `status ${type}`;
+    }
+
+    // Handle page visibility changes (stop camera when page is hidden)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && stream) {
+        stopCamera();
+      }
+    });
+  </script>
 </body>
 </html>
