@@ -205,6 +205,52 @@
       transform: translateY(-2px);
       box-shadow: 0 8px 25px rgba(0,0,0,0.3);
     }
+    .action-buttons {
+  display: flex;
+  gap: 15px;
+  width: 100%;
+}
+
+.meal-plan-btn {
+  flex: 2;
+  background: linear-gradient(45deg, #00b894, #00a085);
+  color: white;
+  border: none;
+  padding: 15px 24px;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.meal-plan-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+.meal-plan-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.back-btn {
+  flex: 1;
+}
+
+.ingredient-count {
+  font-size: 0.9em;
+  opacity: 0.9;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 8px;
+  border-radius: 12px;
+}
   </style>
 </head>
 <body>
@@ -225,8 +271,13 @@
       <p>No ingredients selected yet. Search and select ingredients above.</p>
     </div>
 
-    <button class="back-btn" onclick="goBack()">⬅️ Back to Main</button>
-  </div>
+    <div class="action-buttons" style="display: flex; gap: 15px; width: 100%; margin-bottom: 20px;">
+  <button class="meal-plan-btn" onclick="goToMealPlan()" id="mealPlanBtn" disabled>
+    🍽️ Create Meal Plan
+    <span class="ingredient-count" id="ingredientCount">(0 ingredients)</span>
+  </button>
+  <button class="back-btn" onclick="goBack()">⬅️ Back</button>
+</div>
 
   <script>
     // Replace these with your actual Edamam API credentials
@@ -646,9 +697,14 @@
     }
 
     function updateSelectionBox() {
+      const mealPlanBtn = document.getElementById('mealPlanBtn');
+      const ingredientCount = document.getElementById('ingredientCount');
+
       if (selectedFoods.length === 0) {
         selectionBox.className = 'selection-box empty';
         selectionBox.innerHTML = '<p>No ingredients selected yet. Search and select ingredients above.</p>';
+        if (mealPlanBtn) mealPlanBtn.disabled = true;
+        if (ingredientCount) ingredientCount.textContent = '(0 ingredients)';
       } else {
         selectionBox.className = 'selection-box has-selection';
         selectionBox.innerHTML = selectedFoods.map((ingredient, index) => `
@@ -660,8 +716,25 @@
             </div>
             <button class="remove-btn" onclick="removeFood(${index})">✕</button>
           </div>
+
         `).join('');
+        if (mealPlanBtn) mealPlanBtn.disabled = false;
+        if (ingredientCount) ingredientCount.textContent = `(${selectedFoods.length} ingredient${selectedFoods.length !== 1 ? 's' : ''})`;
       }
+      // Save ingredients to localStorage
+      localStorage.setItem('selectedIngredients', JSON.stringify(selectedFoods));
+    }
+
+
+     function goToMealPlan() {
+      if (selectedFoods.length === 0) {
+        alert('Please select some ingredients first!');
+        return;
+      }
+      //return what was asked
+      // Save ingredients to local Storage
+      localStorage.setItem('selectedIngredients', JSON.stringify(selectedFoods));
+      window.location.href = 'mealplan.html';
     }
 
     function closeDropdown(e) {
