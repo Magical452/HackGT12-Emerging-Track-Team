@@ -1,0 +1,87 @@
+/* Mobile-first responsive stylesheet for TasteFindr */
+:root{
+  --bg-gradient: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+  --accent-1: #00b894;
+  --accent-2: #6c5ce7;
+  --muted-white: rgba(255,255,255,0.85);
+}
+
+/* Base resets */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background:var(--bg-gradient);
+  color:#fff;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Layout helpers */
+.container{width:100%;max-width:1024px;margin:0 auto;padding:16px}
+.card{background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border-radius:14px;padding:12px}
+
+/* Large tappable primary button */
+.btn-primary{
+  width:100%;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:14px 16px;
+  font-size:16px;
+  font-weight:700;
+  border-radius:12px;
+  border:none;
+  color:white;
+  background:linear-gradient(45deg,var(--accent-1),#00a085);
+  box-shadow:0 8px 20px rgba(0,0,0,0.25);
+}
+
+.btn-secondary{background:linear-gradient(45deg,var(--accent-2),#a29bfe);border:none;color:white;padding:12px 14px;border-radius:10px}
+
+/* Navigation / home buttons */
+.home-actions{display:flex;flex-direction:column;gap:12px;align-items:stretch}
+
+/* Camera page specific */
+.camera-container{display:flex;flex-direction:column;gap:12px;align-items:center;padding:12px}
+#video{width:100%;height:auto;border-radius:12px;background:#000}
+.controls{display:flex;gap:8px;width:100%;justify-content:space-between}
+.controls .btn{flex:1}
+.controls .btn + .btn{margin-left:8px}
+
+/* Make controls fixed at bottom on small screens for reachability */
+@media (max-width:480px){
+  .controls{position:fixed;left:12px;right:12px;bottom:12px;padding:10px;background:linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.28));border-radius:12px;backdrop-filter:blur(6px)}
+  .camera-container{padding-bottom:80px}
+}
+
+/* Insert / search inputs */
+.search-bar{width:100%;padding:12px 14px;border-radius:10px;border:none;font-size:16px}
+.dropdown{max-height:260px;overflow-y:auto;border-radius:10px}
+.selection-box{min-height:80px;padding:12px;border-radius:10px}
+.selected-food{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px}
+
+/* Meal plan grid adjustments */
+.recipes-grid{display:grid;grid-template-columns:1fr;gap:12px}
+@media (min-width:700px){
+  .recipes-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (min-width:1100px){
+  .recipes-grid{grid-template-columns:repeat(3,1fr)}
+}
+
+/* Accessibility & touch targets */
+button, .btn-primary, .btn-secondary{touch-action:manipulation}
+button{min-height:44px}
+
+/* Utility */
+.hidden{display:none!important}
+.text-center{text-align:center}
+.small{font-size:0.9rem;opacity:0.9}
+
+/* Form spacing on small devices */
+@media (max-width:480px){
+  .container{padding:12px}
+  h1,h2{font-size:1.25rem}
+}

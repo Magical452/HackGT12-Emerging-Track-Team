@@ -4,207 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Camera - Food Hackathon</title>
+  <link rel="stylesheet" href="mobile.css">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: white;
-    }
-
-    .camera-container {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 30px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-      max-width: 90vw;
-      max-height: 90vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    #video {
-      width: 100%;
-      max-width: 640px;
-      height: auto;
-      border-radius: 15px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-      background: #000;
-    }
-
-    .controls {
-      margin-top: 20px;
-      display: flex;
-      gap: 15px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .btn {
-      background: linear-gradient(45deg, #00b894, #00a085);
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      font-size: 16px;
-      font-weight: 600;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-    }
-
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .btn.stop {
-      background: linear-gradient(45deg, #e17055, #d63031);
-    }
-
-    .btn.capture {
-      background: linear-gradient(45deg, #fdcb6e, #e17055);
-    }
-
-    .btn.analyze {
-      background: linear-gradient(45deg, #6c5ce7, #a29bfe);
-    }
-
-    .btn.back {
-      background: linear-gradient(45deg, #6c5ce7, #a29bfe);
-    }
-
-    .status {
-      margin-bottom: 20px;
-      padding: 10px 20px;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.2);
-      text-align: center;
-    }
-
-    .error {
-      background: rgba(231, 76, 60, 0.3);
-    }
-
-    .success {
-      background: rgba(46, 204, 113, 0.3);
-    }
-
-    .loading {
-      background: rgba(241, 196, 15, 0.3);
-    }
-
-    canvas {
-      display: none;
-    }
-
-    .captured-image {
-      margin-top: 20px;
-      max-width: 300px;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    }
-
-    .analysis-section {
-      margin-top: 25px;
-      width: 100%;
-      max-width: 600px;
-    }
-
-    .ingredients-header {
-      background: rgba(255, 255, 255, 0.15);
-      padding: 15px 20px;
-      border-radius: 10px 10px 0 0;
-      text-align: center;
-      font-size: 18px;
-      font-weight: bold;
-      border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .ingredients-list {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 0 0 10px 10px;
-      padding: 0;
-      margin: 0;
-      list-style: none;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    .ingredients-list li {
-      padding: 12px 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      display: flex;
-      align-items: center;
-      transition: background 0.2s ease;
-    }
-
-    .ingredients-list li:last-child {
-      border-bottom: none;
-    }
-
-    .ingredients-list li:hover {
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    .ingredients-list li:before {
-      content: "🥘";
-      margin-right: 10px;
-      font-size: 16px;
-    }
-
-    .raw-response {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      padding: 20px;
-      margin-top: 15px;
-      font-size: 14px;
-      line-height: 1.5;
-      white-space: pre-wrap;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-
-    .raw-response-header {
-      font-weight: bold;
-      margin-bottom: 10px;
-      color: #fff;
-      font-size: 16px;
-    }
-
-    .spinner {
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top: 3px solid #fff;
-      width: 20px;
-      height: 20px;
-      animation: spin 1s linear infinite;
-      display: inline-block;
-      margin-right: 10px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+    /* keep minimal page-specific tweaks; most layout is in mobile.css */
+    .camera-container{background:rgba(255,255,255,0.06);padding:16px;border-radius:14px;max-width:960px;margin:18px auto}
+  #video{width:100%;border-radius:12px;background:#000}
+  /* Hide the offscreen canvas used for capturing to avoid duplicate images */
+  #canvas{display:none!important}
+    .controls{display:flex;gap:8px;margin-top:12px}
+    .controls .btn{flex:1}
+    .status{padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.06);text-align:center}
+    .analysis-section{margin-top:16px}
+    @media (max-width:480px){.camera-container{margin:12px;padding-bottom:96px}}
   </style>
 </head>
 <body>
@@ -218,6 +29,7 @@
       <button id="startBtn" class="btn">📷 Start Camera</button>
       <button id="stopBtn" class="btn stop" style="display: none;">⏹️ Stop Camera</button>
       <button id="captureBtn" class="btn capture" style="display: none;">📸 Capture Photo</button>
+      <button id="retakeBtn" class="btn" style="display: none;">🔁 Retake</button>
       <button id="analyzeBtn" class="btn analyze" style="display: none;">🔍 Analyze Food</button>
       <button id="backBtn" class="btn back">⬅️ Back to Main</button>
     </div>
@@ -246,6 +58,7 @@
     const stopBtn = document.getElementById('stopBtn');
     const captureBtn = document.getElementById('captureBtn');
     const analyzeBtn = document.getElementById('analyzeBtn');
+  const retakeBtn = document.getElementById('retakeBtn');
     const backBtn = document.getElementById('backBtn');
     const status = document.getElementById('status');
     const capturedImage = document.getElementById('capturedImage');
@@ -256,8 +69,9 @@
     let stream = null;
     let currentImageData = null;
 
-    // *** ADD YOUR OPENAI API KEY HERE ***
-    const OPENAI_API_KEY = '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'; // Replace with your actual API key
+  // IMPORTANT: Do NOT commit your real API key. Use environment injection or a server-side proxy.
+  // For development replace the value below with a runtime-provided key.
+  const OPENAI_API_KEY = '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';
 
     // Check if getUserMedia is supported
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -267,6 +81,7 @@
     startBtn.addEventListener('click', startCamera);
     stopBtn.addEventListener('click', stopCamera);
     captureBtn.addEventListener('click', capturePhoto);
+  retakeBtn.addEventListener('click', retakePhoto);
     analyzeBtn.addEventListener('click', analyzeFood);
     backBtn.addEventListener('click', () => {
       window.location.href = 'index.html';
@@ -286,7 +101,9 @@
           audio: false
         });
 
-        video.srcObject = stream;
+  video.srcObject = stream;
+  // ensure video is visible when camera starts
+  video.style.display = 'block';
 
         showStatus('Camera is active', 'success');
         startBtn.style.display = 'none';
@@ -342,17 +159,42 @@
       // Convert canvas to image data URL
       currentImageData = canvas.toDataURL('image/png');
 
-      // Display the captured image
-      capturedImage.src = currentImageData;
-      capturedImage.style.display = 'block';
+  // Display the captured image and hide the live video so the frame doesn't appear twice
+  capturedImage.src = currentImageData;
+  capturedImage.style.display = 'block';
+  video.style.display = 'none';
 
-      // Show analyze button
-      analyzeBtn.style.display = 'inline-block';
+  // Show analyze and retake buttons
+  analyzeBtn.style.display = 'inline-block';
+  retakeBtn.style.display = 'inline-block';
 
       showStatus('Photo captured successfully! Click "Analyze Food" to identify ingredients.', 'success');
 
       // Hide previous analysis
       analysisSection.style.display = 'none';
+    }
+
+    function retakePhoto() {
+      // Clear captured image and analysis, show live video again
+      currentImageData = null;
+      capturedImage.src = '';
+      capturedImage.style.display = 'none';
+      analysisSection.style.display = 'none';
+      ingredientsList.innerHTML = '';
+      rawResponse.textContent = '';
+
+      // Hide retake and analyze buttons
+      retakeBtn.style.display = 'none';
+      analyzeBtn.style.display = 'none';
+
+      // Show video and resume camera if stream exists
+      if (stream) {
+        video.style.display = 'block';
+      } else {
+        // If stream was stopped, restart camera
+        startCamera();
+      }
+      showStatus('Ready to retake photo', 'status');
     }
 
     // *** THIS IS THE NEW FUNCTION - Direct OpenAI API call ***
