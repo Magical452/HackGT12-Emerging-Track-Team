@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food Hackathon</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      gap: 0;
+    }
+
+    .button {
+      color: white;
+      border: none;
+      font-size: 32px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      position: relative;
+      overflow: hidden;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 10vh 2.5vw;
+      height: 80vh;
+      border-radius: 20px;
+    }
+
+    .button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    .button:hover::before {
+      left: 100%;
+    }
+
+    .button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(0,0,0,0.3);
+      background: linear-gradient(45deg, #ff5252, #d63031);
+    }
+
+    .button:active {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    }
+
+    .button.camera {
+      background: linear-gradient(45deg, #00b894, #00a085);
+    }
+
+    .button.camera:hover {
+      background: linear-gradient(45deg, #00a085, #00907a);
+    }
+
+    .button.insert {
+      background: linear-gradient(45deg, #e17055, #d63031);
+    }
+
+    .button.insert:hover {
+      background: linear-gradient(45deg, #d63031, #c0392b);
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        flex-direction: column;
+        gap: 30px;
+        padding: 20px;
+      }
+
+      .button {
+        width: 100%;
+        max-width: 250px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button class="button camera" onclick="useCamera()">
+      📷 Use Camera
+    </button>
+
+    <button class="button insert" onclick="insertFile()">
+      📁 Insert
+    </button>
+  </div>
+
+  <script>
+    function useCamera() {
+      window.location.href = 'camera.html';
+      // Add your camera logic here
+    }
+
+    function insertFile() {
+      window.location.href = 'insert.html';
+      // Add your file insertion logic here
+    }
+  </script>
+</body>
+</html>
