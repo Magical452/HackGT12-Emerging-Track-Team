@@ -92,6 +92,10 @@
       background: linear-gradient(45deg, #6c5ce7, #a29bfe);
     }
 
+    .btn.meal-plan {
+      background: linear-gradient(45deg, #fd79a8, #e84393);
+    }
+
     .status {
       margin-bottom: 20px;
       padding: 10px 20px;
@@ -156,6 +160,7 @@
       display: flex;
       align-items: center;
       transition: background 0.2s ease;
+      cursor: pointer;
     }
 
     .ingredients-list li:last-child {
@@ -164,6 +169,10 @@
 
     .ingredients-list li:hover {
       background: rgba(255, 255, 255, 0.05);
+    }
+
+    .ingredients-list li.selected {
+      background: rgba(46, 204, 113, 0.3);
     }
 
     .ingredients-list li:before {
@@ -201,9 +210,39 @@
       margin-right: 10px;
     }
 
+    .ingredient-selection {
+      margin-top: 15px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+    }
+
+    .selection-header {
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .selection-count {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+      .controls {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -219,6 +258,7 @@
       <button id="stopBtn" class="btn stop" style="display: none;">⏹️ Stop Camera</button>
       <button id="captureBtn" class="btn capture" style="display: none;">📸 Capture Photo</button>
       <button id="analyzeBtn" class="btn analyze" style="display: none;">🔍 Analyze Food</button>
+      <button id="mealPlanBtn" class="btn meal-plan" style="display: none;">🍽️ Create Meal Plan</button>
       <button id="backBtn" class="btn back">⬅️ Back to Main</button>
     </div>
 
@@ -228,8 +268,12 @@
       <div class="ingredients-header">
         🍽️ Detected Ingredients
       </div>
-      <ul id="ingredientsList" class="ingredients-list">
-      </ul>
+      <div class="ingredient-selection">
+        <div class="selection-header">Click ingredients to select/deselect for your meal plan:</div>
+        <ul id="ingredientsList" class="ingredients-list">
+        </ul>
+        <div class="selection-count" id="selectionCount">0 ingredients selected</div>
+      </div>
 
       <div class="raw-response">
         <div class="raw-response-header">Full Analysis:</div>
@@ -246,18 +290,53 @@
     const stopBtn = document.getElementById('stopBtn');
     const captureBtn = document.getElementById('captureBtn');
     const analyzeBtn = document.getElementById('analyzeBtn');
+    const mealPlanBtn = document.getElementById('mealPlanBtn');
     const backBtn = document.getElementById('backBtn');
     const status = document.getElementById('status');
     const capturedImage = document.getElementById('capturedImage');
     const analysisSection = document.getElementById('analysisSection');
     const ingredientsList = document.getElementById('ingredientsList');
     const rawResponse = document.getElementById('rawResponse');
+    const selectionCount = document.getElementById('selectionCount');
 
     let stream = null;
     let currentImageData = null;
+    let detectedIngredients = [];
+    let selectedIngredients = [];
 
     // *** ADD YOUR OPENAI API KEY HERE ***
     const OPENAI_API_KEY = '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'; // Replace with your actual API key
+
+    // Emoji mapping for common ingredients
+    const ingredientEmojis = {
+      'tomato': '🍅', 'tomatoes': '🍅',
+      'onion': '🧅', 'onions': '🧅',
+      'garlic': '🧄',
+      'carrot': '🥕', 'carrots': '🥕',
+      'potato': '🥔', 'potatoes': '🥔',
+      'broccoli': '🥦',
+      'corn': '🌽',
+      'pepper': '🌶️', 'peppers': '🌶️',
+      'mushroom': '🍄', 'mushrooms': '🍄',
+      'lettuce': '🥬',
+      'spinach': '🥬',
+      'cucumber': '🥒',
+      'avocado': '🥑',
+      'lemon': '🍋', 'lemons': '🍋',
+      'lime': '🍋', 'limes': '🍋',
+      'apple': '🍎', 'apples': '🍎',
+      'banana': '🍌', 'bananas': '🍌',
+      'orange': '🍊', 'oranges': '🍊',
+      'chicken': '🐔',
+      'beef': '🥩',
+      'fish': '🐟',
+      'egg': '🥚', 'eggs': '🥚',
+      'cheese': '🧀',
+      'milk': '🥛',
+      'bread': '🍞',
+      'rice': '🍚',
+      'pasta': '🍝'
+    };
 
     // Check if getUserMedia is supported
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -268,6 +347,11 @@
     stopBtn.addEventListener('click', stopCamera);
     captureBtn.addEventListener('click', capturePhoto);
     analyzeBtn.addEventListener('click', analyzeFood);
+    mealPlanBtn.addEventListener('click', (event) => {
+      event.preventDefault(); // Prevent any default behavior
+      console.log('Meal Plan button clicked!');
+      goToMealPlan();
+    });
     backBtn.addEventListener('click', () => {
       window.location.href = 'index.html';
     });
@@ -322,11 +406,14 @@
       stopBtn.style.display = 'none';
       captureBtn.style.display = 'none';
       analyzeBtn.style.display = 'none';
+      mealPlanBtn.style.display = 'none';
 
       // Hide captured content
       capturedImage.style.display = 'none';
       analysisSection.style.display = 'none';
       currentImageData = null;
+      detectedIngredients = [];
+      selectedIngredients = [];
     }
 
     function capturePhoto() {
@@ -353,9 +440,9 @@
 
       // Hide previous analysis
       analysisSection.style.display = 'none';
+      mealPlanBtn.style.display = 'none';
     }
 
-    // *** THIS IS THE NEW FUNCTION - Direct OpenAI API call ***
     async function analyzeFood() {
       if (!currentImageData) {
         showStatus('No photo to analyze. Please capture a photo first.', 'error');
@@ -382,7 +469,7 @@
                 content: [
                   {
                     type: 'text',
-                    text: 'Analyze the image, list all food ingredients you can identify.'
+                    text: 'Analyze this food image and list all identifiable ingredients. For each ingredient, provide just the name (e.g., "tomato", "onion", "chicken breast"). Format as a simple list, one ingredient per line.'
                   },
                   {
                     type: 'image_url',
@@ -407,7 +494,7 @@
         const ingredientsText = data.choices[0].message.content;
 
         displayResults(ingredientsText);
-        showStatus('✅ Food analysis complete!', 'success');
+        showStatus('✅ Food analysis complete! Select ingredients for your meal plan.', 'success');
 
       } catch (error) {
         console.error('Error analyzing food:', error);
@@ -437,19 +524,31 @@
 
       // Parse ingredients into a list
       const ingredients = parseIngredients(ingredientsText);
+      detectedIngredients = ingredients.map(name => ({
+        name: name.toLowerCase().trim(),
+        displayName: name.trim(),
+        emoji: getIngredientEmoji(name.toLowerCase().trim())
+      }));
 
       // Clear previous results
       ingredientsList.innerHTML = '';
+      selectedIngredients = [];
 
-      // Add each ingredient as a list item
-      ingredients.forEach(ingredient => {
+      // Add each ingredient as a clickable list item
+      detectedIngredients.forEach((ingredient, index) => {
         const li = document.createElement('li');
-        li.textContent = ingredient;
+        li.textContent = ingredient.displayName;
+        li.dataset.index = index;
+        li.style.setProperty('--emoji', `"${ingredient.emoji}"`);
+        li.addEventListener('click', () => toggleIngredient(index));
         ingredientsList.appendChild(li);
       });
 
-      // Show the results section
+      updateSelectionCount();
+
+      // Show the results section and meal plan button
       analysisSection.style.display = 'block';
+      mealPlanBtn.style.display = 'inline-block';
     }
 
     function parseIngredients(text) {
@@ -499,6 +598,82 @@
       }
 
       return ingredients;
+    }
+
+    function getIngredientEmoji(ingredientName) {
+      // Check for exact matches first
+      if (ingredientEmojis[ingredientName]) {
+        return ingredientEmojis[ingredientName];
+      }
+
+      // Check for partial matches
+      for (const key in ingredientEmojis) {
+        if (ingredientName.includes(key) || key.includes(ingredientName)) {
+          return ingredientEmojis[key];
+        }
+      }
+
+      return '🥘'; // Default emoji
+    }
+
+    function toggleIngredient(index) {
+      const li = ingredientsList.children[index];
+      const ingredient = detectedIngredients[index];
+
+      if (selectedIngredients.some(item => item.name === ingredient.name)) {
+        // Remove from selected
+        selectedIngredients = selectedIngredients.filter(item => item.name !== ingredient.name);
+        li.classList.remove('selected');
+      } else {
+        // Add to selected
+        selectedIngredients.push(ingredient);
+        li.classList.add('selected');
+      }
+
+      updateSelectionCount();
+    }
+
+    function updateSelectionCount() {
+      selectionCount.textContent = `${selectedIngredients.length} ingredient${selectedIngredients.length !== 1 ? 's' : ''} selected`;
+    }
+
+    function goToMealPlan() {
+      if (selectedIngredients.length === 0) {
+        showStatus('Please select at least one ingredient for your meal plan.', 'error');
+        return;
+      }
+
+      // Store selected ingredients for the meal plan page
+      const ingredientsData = selectedIngredients.map(ing => ({
+        name: ing.displayName,
+        emoji: ing.emoji
+      }));
+
+      // Debug: Log the data being passed
+      console.log('Selected ingredients:', ingredientsData);
+
+      // Navigate to meal plan page with ingredients
+      try {
+        const ingredientsParam = encodeURIComponent(JSON.stringify(ingredientsData));
+        const targetUrl = `mealplan.html?ingredients=${ingredientsParam}`;
+
+        console.log('Navigating to:', targetUrl);
+
+        // Try multiple navigation methods
+        window.location.assign(targetUrl);
+
+        // Fallback after a short delay
+        setTimeout(() => {
+          if (window.location.href.indexOf('mealplan.html') === -1) {
+            console.log('First method failed, trying window.location.href');
+            window.location.href = targetUrl;
+          }
+        }, 100);
+
+      } catch (error) {
+        console.error('Navigation error:', error);
+        showStatus('Navigation failed. Please check that mealplan.html exists in the same folder.', 'error');
+      }
     }
 
     function showStatus(message, type) {
