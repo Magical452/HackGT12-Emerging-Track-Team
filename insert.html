@@ -2,8 +2,677 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title> Insert </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Insert Food - Food Hackathon</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      padding: 20px;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      max-width: 600px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 30px;
+      text-align: center;
+      background: linear-gradient(45deg, #ff6b6b, #feca57);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .search-section {
+      width: 100%;
+      position: relative;
+      margin-bottom: 30px;
+    }
+
+    .search-bar {
+      width: 100%;
+      padding: 15px 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+
+    .search-bar:focus {
+      outline: none;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      background: rgba(255, 255, 255, 1);
+    }
+
+    .search-bar::placeholder {
+      color: #666;
+    }
+
+    .dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+    }
+
+    .dropdown-item {
+      padding: 12px 20px;
+      color: #333;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+      transition: background-color 0.2s ease;
+      display: flex;
+      align-items: center;
+    }
+
+    .dropdown-item:last-child {
+      border-bottom: none;
+    }
+
+    .dropdown-item:hover {
+      background-color: #f8f9fa;
+    }
+
+    .dropdown-item.highlighted {
+      background-color: #e3f2fd;
+    }
+
+    .food-emoji {
+      margin-right: 10px;
+      font-size: 1.2em;
+    }
+
+    .selection-box {
+      width: 100%;
+      min-height: 150px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px dashed rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .selection-box.has-selection {
+      border: 2px solid rgba(46, 204, 113, 0.8);
+      background: rgba(46, 204, 113, 0.1);
+    }
+
+    .selection-box.empty {
+      color: rgba(255, 255, 255, 0.6);
+      font-style: italic;
+    }
+
+    .selected-food {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 15px 20px;
+      border-radius: 10px;
+      margin: 10px 0;
+      width: 100%;
+    }
+
+    .selected-food-emoji {
+      font-size: 2em;
+    }
+
+    .selected-food-info {
+      flex: 1;
+    }
+
+    .selected-food-name {
+      font-size: 1.3em;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .selected-food-category {
+      font-size: 0.9em;
+      opacity: 0.8;
+    }
+
+    .remove-btn {
+      background: rgba(231, 76, 60, 0.8);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 0.8em;
+      transition: all 0.2s ease;
+    }
+
+    .remove-btn:hover {
+      background: rgba(231, 76, 60, 1);
+      transform: scale(1.05);
+    }
+
+    .back-btn {
+      background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h1 class="title">🥬 Search Ingredients</h1>
+
+    <div class="search-section">
+      <input
+        type="text"
+        class="search-bar"
+        placeholder="Type an ingredient (e.g., tomato, flour, garlic)..."
+        id="foodSearch"
+      >
+      <div class="dropdown" id="dropdown"></div>
+    </div>
+
+    <div class="selection-box empty" id="selectionBox">
+      <p>No ingredients selected yet. Search and select ingredients above.</p>
+    </div>
+
+    <button class="back-btn" onclick="goBack()">⬅️ Back to Main</button>
+  </div>
+
+  <script>
+    // Replace these with your actual Edamam API credentials
+    const APP_ID = 'YOUR_CLIENT_ID_HERE';
+    const APP_KEY = 'YOUR_CLIENT_SECRET_HERE';
+
+    const searchInput = document.getElementById('foodSearch');
+    const dropdown = document.getElementById('dropdown');
+    const selectionBox = document.getElementById('selectionBox');
+
+    let selectedFoods = [];
+    let currentHighlight = -1;
+    let searchTimeout = null;
+
+    searchInput.addEventListener('input', handleSearch);
+    searchInput.addEventListener('keydown', handleKeydown);
+    document.addEventListener('click', closeDropdown);
+
+    function handleSearch(e) {
+      const query = e.target.value.toLowerCase().trim();
+
+      // Clear previous timeout
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+
+      if (query === '' || query.length < 2) {
+        hideDropdown();
+        return;
+      }
+
+      // Add delay to avoid too many API calls
+      searchTimeout = setTimeout(() => {
+        searchIngredients(query);
+      }, 300);
+    }
+
+    async function searchIngredients(query) {
+      try {
+        showLoading();
+
+        // Try using a CORS proxy or fallback to local search
+        // Option 1: Try with CORS proxy (may not always work)
+        const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+        const apiUrl = `https://api.edamam.com/api/food-database/v2/parser?app_id=${APP_ID}&app_key=${APP_KEY}&ingr=${encodeURIComponent(query)}&nutrition-type=cooking-basic&category=generic-foods`;
+
+        let response;
+
+        try {
+          // First attempt with CORS proxy
+          response = await fetch(proxyUrl + apiUrl, {
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error('CORS proxy failed');
+          }
+
+          const data = await response.json();
+
+          if (data.hints && data.hints.length > 0) {
+            const ingredients = data.hints.slice(0, 8).map(hint => ({
+              name: hint.food.label,
+              emoji: getIngredientEmoji(hint.food.label, hint.food.category),
+              category: hint.food.category || 'Unknown',
+              foodId: hint.food.foodId,
+              nutrients: hint.food.nutrients
+            }));
+
+            showDropdown(ingredients);
+            return;
+          }
+        } catch (corsError) {
+          console.log('CORS proxy failed, using fallback database');
+        }
+
+        // Fallback to enhanced local database search
+        searchLocalIngredients(query);
+
+      } catch (error) {
+        console.error('Error searching ingredients:', error);
+        searchLocalIngredients(query); // Always fallback to local search
+      }
+    }
+
+    function searchLocalIngredients(query) {
+      // Enhanced local ingredient database
+      // We could improve this with API Key, however there are more edge cases than expected meaning it will take too much time so for now lets keep this map
+      const localIngredients = [
+        // Vegetables
+        { name: 'Tomato', emoji: '🍅', category: 'Vegetable' },
+        { name: 'Cherry Tomatoes', emoji: '🍅', category: 'Vegetable' },
+        { name: 'Roma Tomatoes', emoji: '🍅', category: 'Vegetable' },
+        { name: 'Onion', emoji: '🧅', category: 'Vegetable' },
+        { name: 'Red Onion', emoji: '🧅', category: 'Vegetable' },
+        { name: 'Yellow Onion', emoji: '🧅', category: 'Vegetable' },
+        { name: 'Green Onion', emoji: '🧅', category: 'Vegetable' },
+        { name: 'Garlic', emoji: '🧄', category: 'Vegetable' },
+        { name: 'Garlic Cloves', emoji: '🧄', category: 'Vegetable' },
+        { name: 'Bell Pepper', emoji: '🫑', category: 'Vegetable' },
+        { name: 'Red Bell Pepper', emoji: '🫑', category: 'Vegetable' },
+        { name: 'Green Bell Pepper', emoji: '🫑', category: 'Vegetable' },
+        { name: 'Yellow Bell Pepper', emoji: '🫑', category: 'Vegetable' },
+        { name: 'Carrot', emoji: '🥕', category: 'Vegetable' },
+        { name: 'Baby Carrots', emoji: '🥕', category: 'Vegetable' },
+        { name: 'Broccoli', emoji: '🥦', category: 'Vegetable' },
+        { name: 'Broccoli Florets', emoji: '🥦', category: 'Vegetable' },
+        { name: 'Spinach', emoji: '🥬', category: 'Leafy Green' },
+        { name: 'Baby Spinach', emoji: '🥬', category: 'Leafy Green' },
+        { name: 'Lettuce', emoji: '🥬', category: 'Leafy Green' },
+        { name: 'Romaine Lettuce', emoji: '🥬', category: 'Leafy Green' },
+        { name: 'Iceberg Lettuce', emoji: '🥬', category: 'Leafy Green' },
+        { name: 'Cucumber', emoji: '🥒', category: 'Vegetable' },
+        { name: 'English Cucumber', emoji: '🥒', category: 'Vegetable' },
+        { name: 'Mushroom', emoji: '🍄', category: 'Vegetable' },
+        { name: 'Button Mushrooms', emoji: '🍄', category: 'Vegetable' },
+        { name: 'Shiitake Mushrooms', emoji: '🍄', category: 'Vegetable' },
+        { name: 'Portobello Mushrooms', emoji: '🍄', category: 'Vegetable' },
+        { name: 'Potato', emoji: '🥔', category: 'Vegetable' },
+        { name: 'Russet Potato', emoji: '🥔', category: 'Vegetable' },
+        { name: 'Red Potato', emoji: '🥔', category: 'Vegetable' },
+        { name: 'Sweet Potato', emoji: '🍠', category: 'Vegetable' },
+        { name: 'Corn', emoji: '🌽', category: 'Vegetable' },
+        { name: 'Corn Kernels', emoji: '🌽', category: 'Vegetable' },
+        { name: 'Avocado', emoji: '🥑', category: 'Fruit' },
+        { name: 'Hass Avocado', emoji: '🥑', category: 'Fruit' },
+        { name: 'Eggplant', emoji: '🍆', category: 'Vegetable' },
+        { name: 'Zucchini', emoji: '🥒', category: 'Vegetable' },
+        { name: 'Squash', emoji: '🎃', category: 'Vegetable' },
+        { name: 'Cauliflower', emoji: '🥦', category: 'Vegetable' },
+        { name: 'Cabbage', emoji: '🥬', category: 'Vegetable' },
+        { name: 'Kale', emoji: '🥬', category: 'Leafy Green' },
+
+        // Proteins
+        { name: 'Chicken Breast', emoji: '🐔', category: 'Protein' },
+        { name: 'Chicken Thighs', emoji: '🐔', category: 'Protein' },
+        { name: 'Chicken Wings', emoji: '🐔', category: 'Protein' },
+        { name: 'Ground Chicken', emoji: '🐔', category: 'Protein' },
+        { name: 'Ground Beef', emoji: '🥩', category: 'Protein' },
+        { name: 'Beef Steak', emoji: '🥩', category: 'Protein' },
+        { name: 'Beef Roast', emoji: '🥩', category: 'Protein' },
+        { name: 'Salmon', emoji: '🐟', category: 'Protein' },
+        { name: 'Salmon Fillet', emoji: '🐟', category: 'Protein' },
+        { name: 'Tuna', emoji: '🐟', category: 'Protein' },
+        { name: 'Cod', emoji: '🐟', category: 'Protein' },
+        { name: 'Eggs', emoji: '🥚', category: 'Protein' },
+        { name: 'Egg Whites', emoji: '🥚', category: 'Protein' },
+        { name: 'Tofu', emoji: '🟡', category: 'Protein' },
+        { name: 'Extra Firm Tofu', emoji: '🟡', category: 'Protein' },
+        { name: 'Black Beans', emoji: '🫘', category: 'Protein' },
+        { name: 'Kidney Beans', emoji: '🫘', category: 'Protein' },
+        { name: 'Chickpeas', emoji: '🫛', category: 'Protein' },
+        { name: 'Lentils', emoji: '🫛', category: 'Protein' },
+        { name: 'Shrimp', emoji: '🦐', category: 'Protein' },
+        { name: 'Turkey', emoji: '🦃', category: 'Protein' },
+        { name: 'Ground Turkey', emoji: '🦃', category: 'Protein' },
+        { name: 'Pork', emoji: '🐷', category: 'Protein' },
+        { name: 'Pork Chops', emoji: '🐷', category: 'Protein' },
+        { name: 'Bacon', emoji: '🥓', category: 'Protein' },
+
+        // Grains & Starches
+        { name: 'Rice', emoji: '🌾', category: 'Grain' },
+        { name: 'Brown Rice', emoji: '🌾', category: 'Grain' },
+        { name: 'White Rice', emoji: '🌾', category: 'Grain' },
+        { name: 'Jasmine Rice', emoji: '🌾', category: 'Grain' },
+        { name: 'Basmati Rice', emoji: '🌾', category: 'Grain' },
+        { name: 'Flour', emoji: '🌾', category: 'Baking' },
+        { name: 'All-Purpose Flour', emoji: '🌾', category: 'Baking' },
+        { name: 'Whole Wheat Flour', emoji: '🌾', category: 'Baking' },
+        { name: 'Pasta', emoji: '🍝', category: 'Grain' },
+        { name: 'Spaghetti', emoji: '🍝', category: 'Grain' },
+        { name: 'Penne Pasta', emoji: '🍝', category: 'Grain' },
+        { name: 'Quinoa', emoji: '🌾', category: 'Grain' },
+        { name: 'Oats', emoji: '🌾', category: 'Grain' },
+        { name: 'Rolled Oats', emoji: '🌾', category: 'Grain' },
+        { name: 'Bread', emoji: '🍞', category: 'Grain' },
+        { name: 'Whole Wheat Bread', emoji: '🍞', category: 'Grain' },
+        { name: 'Noodles', emoji: '🍜', category: 'Grain' },
+
+        // Dairy
+        { name: 'Milk', emoji: '🥛', category: 'Dairy' },
+        { name: 'Whole Milk', emoji: '🥛', category: 'Dairy' },
+        { name: 'Skim Milk', emoji: '🥛', category: 'Dairy' },
+        { name: 'Almond Milk', emoji: '🥛', category: 'Non-Dairy' },
+        { name: 'Soy Milk', emoji: '🥛', category: 'Non-Dairy' },
+        { name: 'Cheese', emoji: '🧀', category: 'Dairy' },
+        { name: 'Cheddar Cheese', emoji: '🧀', category: 'Dairy' },
+        { name: 'Mozzarella Cheese', emoji: '🧀', category: 'Dairy' },
+        { name: 'Parmesan Cheese', emoji: '🧀', category: 'Dairy' },
+        { name: 'Butter', emoji: '🧈', category: 'Dairy' },
+        { name: 'Unsalted Butter', emoji: '🧈', category: 'Dairy' },
+        { name: 'Yogurt', emoji: '🥛', category: 'Dairy' },
+        { name: 'Greek Yogurt', emoji: '🥛', category: 'Dairy' },
+        { name: 'Cream', emoji: '🥛', category: 'Dairy' },
+        { name: 'Heavy Cream', emoji: '🥛', category: 'Dairy' },
+        { name: 'Sour Cream', emoji: '🥛', category: 'Dairy' },
+
+        // Fruits
+        { name: 'Lemon', emoji: '🍋', category: 'Fruit' },
+        { name: 'Lemon Juice', emoji: '🍋', category: 'Fruit' },
+        { name: 'Lime', emoji: '🟢', category: 'Fruit' },
+        { name: 'Lime Juice', emoji: '🟢', category: 'Fruit' },
+        { name: 'Apple', emoji: '🍎', category: 'Fruit' },
+        { name: 'Green Apple', emoji: '🍏', category: 'Fruit' },
+        { name: 'Banana', emoji: '🍌', category: 'Fruit' },
+        { name: 'Orange', emoji: '🍊', category: 'Fruit' },
+        { name: 'Orange Juice', emoji: '🍊', category: 'Fruit' },
+        { name: 'Strawberry', emoji: '🍓', category: 'Fruit' },
+        { name: 'Blueberry', emoji: '🫐', category: 'Fruit' },
+        { name: 'Raspberry', emoji: '🫐', category: 'Fruit' },
+        { name: 'Blackberry', emoji: '🫐', category: 'Fruit' },
+
+        // Herbs & Spices
+        { name: 'Basil', emoji: '🌿', category: 'Herb' },
+        { name: 'Fresh Basil', emoji: '🌿', category: 'Herb' },
+        { name: 'Dried Basil', emoji: '🌿', category: 'Herb' },
+        { name: 'Oregano', emoji: '🌿', category: 'Herb' },
+        { name: 'Thyme', emoji: '🌿', category: 'Herb' },
+        { name: 'Rosemary', emoji: '🌿', category: 'Herb' },
+        { name: 'Parsley', emoji: '🌿', category: 'Herb' },
+        { name: 'Cilantro', emoji: '🌿', category: 'Herb' },
+        { name: 'Ginger', emoji: '🫚', category: 'Spice' },
+        { name: 'Fresh Ginger', emoji: '🫚', category: 'Spice' },
+        { name: 'Ground Ginger', emoji: '🫚', category: 'Spice' },
+        { name: 'Black Pepper', emoji: '⚫', category: 'Spice' },
+        { name: 'White Pepper', emoji: '⚪', category: 'Spice' },
+        { name: 'Salt', emoji: '🧂', category: 'Seasoning' },
+        { name: 'Sea Salt', emoji: '🧂', category: 'Seasoning' },
+        { name: 'Kosher Salt', emoji: '🧂', category: 'Seasoning' },
+        { name: 'Paprika', emoji: '🌶️', category: 'Spice' },
+        { name: 'Cumin', emoji: '🌶️', category: 'Spice' },
+        { name: 'Turmeric', emoji: '🟡', category: 'Spice' },
+        { name: 'Cinnamon', emoji: '🤎', category: 'Spice' },
+        { name: 'Nutmeg', emoji: '🤎', category: 'Spice' },
+        { name: 'Vanilla Extract', emoji: '🌼', category: 'Extract' },
+
+        // Oils & Condiments
+        { name: 'Olive Oil', emoji: '🫒', category: 'Oil' },
+        { name: 'Extra Virgin Olive Oil', emoji: '🫒', category: 'Oil' },
+        { name: 'Vegetable Oil', emoji: '🌻', category: 'Oil' },
+        { name: 'Canola Oil', emoji: '🌻', category: 'Oil' },
+        { name: 'Coconut Oil', emoji: '🥥', category: 'Oil' },
+        { name: 'Sesame Oil', emoji: '🌰', category: 'Oil' },
+        { name: 'Soy Sauce', emoji: '🥢', category: 'Condiment' },
+        { name: 'Low Sodium Soy Sauce', emoji: '🥢', category: 'Condiment' },
+        { name: 'Vinegar', emoji: '🍶', category: 'Condiment' },
+        { name: 'White Vinegar', emoji: '🍶', category: 'Condiment' },
+        { name: 'Apple Cider Vinegar', emoji: '🍶', category: 'Condiment' },
+        { name: 'Balsamic Vinegar', emoji: '🍶', category: 'Condiment' },
+        { name: 'Honey', emoji: '🍯', category: 'Sweetener' },
+        { name: 'Sugar', emoji: '🟰', category: 'Sweetener' },
+        { name: 'Brown Sugar', emoji: '🟫', category: 'Sweetener' },
+        { name: 'Maple Syrup', emoji: '🍁', category: 'Sweetener' },
+
+        // Nuts & Seeds
+        { name: 'Almonds', emoji: '🥜', category: 'Nut' },
+        { name: 'Sliced Almonds', emoji: '🥜', category: 'Nut' },
+        { name: 'Walnuts', emoji: '🥜', category: 'Nut' },
+        { name: 'Pecans', emoji: '🥜', category: 'Nut' },
+        { name: 'Cashews', emoji: '🥜', category: 'Nut' },
+        { name: 'Peanuts', emoji: '🥜', category: 'Nut' },
+        { name: 'Sesame Seeds', emoji: '🌰', category: 'Seed' },
+        { name: 'Sunflower Seeds', emoji: '🌻', category: 'Seed' },
+        { name: 'Chia Seeds', emoji: '🌰', category: 'Seed' },
+        { name: 'Flax Seeds', emoji: '🌰', category: 'Seed' }
+      ];
+
+      const matches = localIngredients.filter(ingredient =>
+        ingredient.name.toLowerCase().includes(query.toLowerCase())
+      ).slice(0, 8);
+
+      if (matches.length > 0) {
+        showDropdown(matches);
+      } else {
+        showNoResults();
+      }
+    }
+
+    function getIngredientEmoji(name, category) {
+      const lowerName = name.toLowerCase();
+
+      // Emoji mapping based on ingredient name or category
+      const emojiMap = {
+        // Vegetables
+        'tomato': '🍅', 'onion': '🧅', 'garlic': '🧄', 'pepper': '🫑',
+        'carrot': '🥕', 'broccoli': '🥦', 'spinach': '🥬', 'lettuce': '🥬',
+        'cucumber': '🥒', 'mushroom': '🍄', 'potato': '🥔', 'corn': '🌽',
+        'avocado': '🥑', 'eggplant': '🍆',
+
+        // Proteins
+        'chicken': '🐔', 'beef': '🥩', 'pork': '🐷', 'fish': '🐟',
+        'salmon': '🐟', 'shrimp': '🦐', 'egg': '🥚', 'tofu': '🟡',
+        'bean': '🫘', 'chickpea': '🫛',
+
+        // Fruits
+        'apple': '🍎', 'banana': '🍌', 'orange': '🍊', 'lemon': '🍋',
+        'lime': '🟢', 'strawberry': '🍓', 'blueberry': '🫐',
+
+        // Dairy
+        'milk': '🥛', 'cheese': '🧀', 'butter': '🧈', 'yogurt': '🥛',
+
+        // Grains
+        'rice': '🌾', 'flour': '🌾', 'bread': '🍞', 'pasta': '🌾',
+        'oat': '🌾', 'quinoa': '🌾',
+
+        // Others
+        'oil': '🫒', 'honey': '🍯', 'sugar': '🟰', 'salt': '🧂',
+        'herb': '🌿', 'spice': '🌶️', 'nut': '🥜', 'seed': '🌰'
+      };
+
+      // Check for specific ingredient names first
+      for (const [key, emoji] of Object.entries(emojiMap)) {
+        if (lowerName.includes(key)) {
+          return emoji;
+        }
+      }
+
+      // Fallback based on category
+      if (category) {
+        const categoryLower = category.toLowerCase();
+        if (categoryLower.includes('vegetable')) return '🥬';
+        if (categoryLower.includes('fruit')) return '🍎';
+        if (categoryLower.includes('meat') || categoryLower.includes('protein')) return '🥩';
+        if (categoryLower.includes('dairy')) return '🥛';
+        if (categoryLower.includes('grain') || categoryLower.includes('cereal')) return '🌾';
+      }
+
+      return '🥘'; // Default emoji
+    }
+
+    function showLoading() {
+      dropdown.innerHTML = '<div class="dropdown-item">🔍 Searching ingredients...</div>';
+      dropdown.style.display = 'block';
+    }
+
+    function showNoResults() {
+      dropdown.innerHTML = '<div class="dropdown-item">😔 No ingredients found</div>';
+      dropdown.style.display = 'block';
+    }
+
+    function showError(message) {
+      dropdown.innerHTML = `<div class="dropdown-item">⚠️ ${message}</div>`;
+      dropdown.style.display = 'block';
+    }
+
+    function showDropdown(ingredients) {
+      dropdown.innerHTML = '';
+      currentHighlight = -1;
+
+      ingredients.forEach((ingredient, index) => {
+        const item = document.createElement('div');
+        item.className = 'dropdown-item';
+        item.innerHTML = `
+          <span class="food-emoji">${ingredient.emoji}</span>
+          <div>
+            <div>${ingredient.name}</div>
+            <small style="opacity: 0.7;">${ingredient.category}</small>
+          </div>
+        `;
+        item.addEventListener('click', () => selectFood(ingredient));
+        dropdown.appendChild(item);
+      });
+
+      dropdown.style.display = 'block';
+    }
+
+    function hideDropdown() {
+      dropdown.style.display = 'none';
+      currentHighlight = -1;
+    }
+
+    function handleKeydown(e) {
+      const items = dropdown.querySelectorAll('.dropdown-item');
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        currentHighlight = Math.min(currentHighlight + 1, items.length - 1);
+        highlightItem();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        currentHighlight = Math.max(currentHighlight - 1, -1);
+        highlightItem();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (currentHighlight >= 0 && items[currentHighlight]) {
+          items[currentHighlight].click();
+        }
+      } else if (e.key === 'Escape') {
+        hideDropdown();
+      }
+    }
+
+    function highlightItem() {
+      const items = dropdown.querySelectorAll('.dropdown-item');
+      items.forEach((item, index) => {
+        item.classList.toggle('highlighted', index === currentHighlight);
+      });
+    }
+
+    function selectFood(ingredient) {
+      // Check if ingredient is already selected
+      if (selectedFoods.find(f => f.name === ingredient.name)) {
+        return;
+      }
+
+      selectedFoods.push(ingredient);
+      updateSelectionBox();
+      searchInput.value = '';
+      hideDropdown();
+    }
+
+    function removeFood(index) {
+      selectedFoods.splice(index, 1);
+      updateSelectionBox();
+    }
+
+    function updateSelectionBox() {
+      if (selectedFoods.length === 0) {
+        selectionBox.className = 'selection-box empty';
+        selectionBox.innerHTML = '<p>No ingredients selected yet. Search and select ingredients above.</p>';
+      } else {
+        selectionBox.className = 'selection-box has-selection';
+        selectionBox.innerHTML = selectedFoods.map((ingredient, index) => `
+          <div class="selected-food">
+            <span class="selected-food-emoji">${ingredient.emoji}</span>
+            <div class="selected-food-info">
+              <div class="selected-food-name">${ingredient.name}</div>
+              <div class="selected-food-category">${ingredient.category}</div>
+            </div>
+            <button class="remove-btn" onclick="removeFood(${index})">✕</button>
+          </div>
+        `).join('');
+      }
+    }
+
+    function closeDropdown(e) {
+      if (!e.target.closest('.search-section')) {
+        hideDropdown();
+      }
+    }
+
+    function goBack() {
+      window.location.href = 'index.html'; // or whatever your main page is called
+    }
+  </script>
 </body>
 </html>
