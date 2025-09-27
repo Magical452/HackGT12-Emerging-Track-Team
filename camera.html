@@ -11,6 +11,13 @@
       box-sizing: border-box;
     }
 
+    html {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      background-size: cover;
+    }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -20,6 +27,7 @@
       align-items: center;
       justify-content: center;
       color: white;
+      background: transparent;
     }
 
     .camera-container {
@@ -210,38 +218,28 @@
       margin-right: 10px;
     }
 
-    .ingredient-selection {
-      margin-top: 15px;
-      padding: 15px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 10px;
-    }
-
-    .selection-header {
-      font-weight: bold;
-      margin-bottom: 10px;
-      text-align: center;
-    }
-
-    .selection-count {
-      text-align: center;
-      margin-top: 10px;
-      font-size: 0.9rem;
-      opacity: 0.8;
-    }
-
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 600px) {
       .controls {
         flex-direction: column;
+        width: 100%;
+        gap: 12px;
+        padding: 0 10px;
       }
 
       .btn {
         width: 100%;
+        padding: 14px 18px;
+        font-size: 18px;
+        border-radius: 12px;
+      }
+
+      .captured-image {
+        max-width: 90%;
       }
     }
   </style>
@@ -258,7 +256,6 @@
       <button id="stopBtn" class="btn stop" style="display: none;">⏹️ Stop Camera</button>
       <button id="captureBtn" class="btn capture" style="display: none;">📸 Capture Photo</button>
       <button id="analyzeBtn" class="btn analyze" style="display: none;">🔍 Analyze Food</button>
-      <button id="mealPlanBtn" class="btn meal-plan" style="display: none;">🍽️ Create Meal Plan</button>
       <button id="backBtn" class="btn back">⬅️ Back to Main</button>
     </div>
 
@@ -440,9 +437,9 @@
 
       // Hide previous analysis
       analysisSection.style.display = 'none';
-      mealPlanBtn.style.display = 'none';
     }
 
+    // *** THIS IS THE NEW FUNCTION - Direct OpenAI API call ***
     async function analyzeFood() {
       if (!currentImageData) {
         showStatus('No photo to analyze. Please capture a photo first.', 'error');
@@ -469,7 +466,7 @@
                 content: [
                   {
                     type: 'text',
-                    text: 'Analyze this food image and list all identifiable ingredients. For each ingredient, provide just the name (e.g., "tomato", "onion", "chicken breast"). Format as a simple list, one ingredient per line.'
+                    text: 'Analyze the image, list all food ingredients you can identify.'
                   },
                   {
                     type: 'image_url',
@@ -494,7 +491,7 @@
         const ingredientsText = data.choices[0].message.content;
 
         displayResults(ingredientsText);
-        showStatus('✅ Food analysis complete! Select ingredients for your meal plan.', 'success');
+        showStatus('✅ Food analysis complete!', 'success');
 
       } catch (error) {
         console.error('Error analyzing food:', error);
