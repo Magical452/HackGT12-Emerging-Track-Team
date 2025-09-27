@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meal Plan - Food Hackathon</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: white;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .title {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      background: linear-gradient(45deg, #ff6b6b, #feca57);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      opacity: 0.8;
+      margin-bottom: 30px;
+    }
+
+    .ingredients-section {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+
+    .ingredients-title {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ingredients-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .ingredient-tag {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 8px 16px;
+      border-radius: 25px;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-controls {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-btn {
+      background: linear-gradient(45deg, #00b894, #00a085);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .search-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+
+    .search-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      font-size: 1.2rem;
+    }
+
+    .recipes-section {
+      margin-bottom: 30px;
+    }
+
+    .recipes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .recipe-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+
+    .recipe-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    }
+
+    .recipe-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .recipe-content {
+      padding: 20px;
+    }
+
+    .recipe-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+
+    .recipe-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    .recipe-ingredients {
+      margin-bottom: 15px;
+    }
+
+    .recipe-ingredients-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    .recipe-ingredients-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .recipe-ingredient {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+    }
+
+    .recipe-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .view-recipe-btn {
+      flex: 1;
+      background: linear-gradient(45deg, #e17055, #d63031);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .view-recipe-btn:hover {
+      transform: scale(1.02);
+    }
+
+    .back-btn {
+      background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+    }
+
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+
+    .no-ingredients {
+      text-align: center;
+      padding: 40px;
+      opacity: 0.7;
+    }
+
+    .error-message {
+      background: rgba(231, 76, 60, 0.2);
+      border: 1px solid rgba(231, 76, 60, 0.5);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    @media (max-width: 768px) {
+      .title {
+        font-size: 2rem;
+      }
+
+      .recipes-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .search-controls {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .search-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="title">🍽️ Your Meal Plan</h1>
+      <p class="subtitle">Let's create delicious meals with your ingredients!</p>
+    </div>
+
+    <div class="ingredients-section">
+      <h2 class="ingredients-title">
+        🥬 Your Ingredients
+        <span id="ingredientCount">(0)</span>
+      </h2>
+
+      <div id="ingredientsList" class="ingredients-list">
+        <!-- Ingredients will be populated here -->
+      </div>
+
+      <div id="noIngredients" class="no-ingredients" style="display: none;">
+        <p>No ingredients found. Please go back and select some ingredients first!</p>
+      </div>
+
+      <div class="search-controls">
+        <button id="findRecipesBtn" class="search-btn" onclick="findRecipes()">
+          🔍 Find Recipes
+        </button>
+      </div>
+
+      <div id="errorMessage" class="error-message" style="display: none;"></div>
+    </div>
+
+    <div id="loadingSection" class="loading" style="display: none;">
+      <p>🔍 Searching for delicious recipes...</p>
+    </div>
+
+    <div id="recipesSection" class="recipes-section" style="display: none;">
+      <h2 class="ingredients-title">🍳 Recommended Recipes</h2>
+      <div id="recipesGrid" class="recipes-grid">
+        <!-- Recipes will be populated here -->
+      </div>
+    </div>
+
+    <button class="back-btn" onclick="goBack()">⬅️ Back</button>
+  </div>
+
+  <script>
+    // Replace with your Spoonacular API key
+    const SPOONACULAR_API_KEY = 'c4f5697c8ecc401990c0f03386d913e7';
+
+    let currentIngredients = [];
+    let foundRecipes = [];
+    let currentOffset = 0;
+    let isLoadingMore = false;
+    let hasMoreRecipes = true;
+
+    // Get ingredients from URL parameters or localStorage
+    function getIngredients() {
+      // Try URL parameters first (from camera page)
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlIngredients = urlParams.get('ingredients');
+
+      if (urlIngredients) {
+        try {
+          return JSON.parse(decodeURIComponent(urlIngredients));
+        } catch (e) {
+          console.log('Failed to parse URL ingredients');
+        }
+      }
+
+      // Try localStorage (from insert page)
+      const savedIngredients = localStorage.getItem('selectedIngredients');
+      if (savedIngredients) {
+        try {
+          return JSON.parse(savedIngredients);
+        } catch (e) {
+          console.log('Failed to parse saved ingredients');
+        }
+      }
+
+      return [];
+    }
+
+    function displayIngredients() {
+      currentIngredients = getIngredients();
+      const ingredientsList = document.getElementById('ingredientsList');
+      const ingredientCount = document.getElementById('ingredientCount');
+      const noIngredients = document.getElementById('noIngredients');
+      const findRecipesBtn = document.getElementById('findRecipesBtn');
+
+      if (currentIngredients.length === 0) {
+        noIngredients.style.display = 'block';
+        ingredientsList.style.display = 'none';
+        findRecipesBtn.disabled = true;
+        return;
+      }
+
+      ingredientCount.textContent = `(${currentIngredients.length})`;
+      ingredientsList.innerHTML = currentIngredients.map(ingredient => `
+        <div class="ingredient-tag">
+          <span>${ingredient.emoji || '🥘'}</span>
+          <span>${ingredient.name}</span>
+        </div>
+      `).join('');
+    }
+
+    async function findRecipes() {
+      if (currentIngredients.length === 0) return;
+
+      const findRecipesBtn = document.getElementById('findRecipesBtn');
+      const loadingSection = document.getElementById('loadingSection');
+      const recipesSection = document.getElementById('recipesSection');
+      const errorMessage = document.getElementById('errorMessage');
+
+      findRecipesBtn.disabled = true;
+      loadingSection.style.display = 'block';
+      recipesSection.style.display = 'none';
+      errorMessage.style.display = 'none';
+      currentOffset = 0;
+
+      try {
+        const ingredientNames = currentIngredients.map(ing => ing.name).join(',');
+        const url = `https://api.spoonacular.com/recipes/findByIngredients?apiKey=${SPOONACULAR_API_KEY}&ingredients=${encodeURIComponent(ingredientNames)}&number=6&ranking=2&ignorePantry=false`;
+
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`API Error: ${response.status}`);
+        }
+
+        const recipes = await response.json();
+        if (recipes && recipes.length > 0) {
+          foundRecipes = recipes;
+          await displayRecipes(recipes);
+          recipesSection.style.display = 'block';
+
+          // Initialize infinite scroll
+          initializeInfiniteScroll();
+        } else {
+          showError('No recipes found with your ingredients. Try adding more ingredients!');
+        }
+
+      } catch (error) {
+        console.error('Error finding recipes:', error);
+        showError('Failed to find recipes. Please check your internet connection and API key.');
+      }
+
+      loadingSection.style.display = 'none';
+      findRecipesBtn.disabled = false;
+    }
+
+    // Add these new functions:
+    function initializeInfiniteScroll() {
+      window.addEventListener('scroll', handleScroll);
+    }
+
+    function handleScroll() {
+      if (isLoadingMore || !hasMoreRecipes) return;
+
+      // Check if user scrolled near bottom (200px from bottom)
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
+        loadMoreRecipes();
+      }
+    }
+
+    async function loadMoreRecipes() {
+      if (isLoadingMore || !hasMoreRecipes) return;
+
+      isLoadingMore = true;
+      currentOffset += 6;
+
+      try {
+        const ingredientNames = currentIngredients.map(ing => ing.name).join(',');
+        const url = `https://api.spoonacular.com/recipes/findByIngredients?apiKey=${SPOONACULAR_API_KEY}&ingredients=${encodeURIComponent(ingredientNames)}&number=6&offset=${currentOffset}&ranking=2&ignorePantry=false`;
+
+        const response = await fetch(url);
+        const recipes = await response.json();
+
+        if (recipes && recipes.length > 0) {
+          foundRecipes = [...foundRecipes, ...recipes];
+          await displayRecipes(recipes, true); // append = true
+        } else {
+          hasMoreRecipes = false; // No more recipes available
+        }
+
+      } catch (error) {
+        console.error('Error loading more recipes:', error);
+        hasMoreRecipes = false;
+      }
+
+      isLoadingMore = false;
+    }
+
+    async function displayRecipes(recipes, append = false) {
+      const recipesGrid = document.getElementById('recipesGrid');
+
+      if (!append) {
+        recipesGrid.innerHTML = '';
+      }
+
+      for (const recipe of recipes) {
+        const recipeCard = createRecipeCard(recipe);
+        recipesGrid.appendChild(recipeCard);
+      }
+    }
+
+    function createRecipeCard(recipe) {
+      const card = document.createElement('div');
+      card.className = 'recipe-card';
+
+      const missingCount = recipe.missedIngredientCount || 0;
+      const usedCount = recipe.usedIngredientCount || 0;
+
+      card.innerHTML = `
+        <img src="${recipe.image}" alt="${recipe.title}" class="recipe-image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7wn42iIFJlY2lwZTwvdGV4dD48L3N2Zz4='">
+        <div class="recipe-content">
+          <h3 class="recipe-title">${recipe.title}</h3>
+          <div class="recipe-meta">
+            <span>✅ Uses ${usedCount} ingredients</span>
+            <span>❌ Missing ${missingCount}</span>
+          </div>
+          <div class="recipe-ingredients">
+            <div class="recipe-ingredients-title">Used Ingredients:</div>
+            <div class="recipe-ingredients-list">
+              ${(recipe.usedIngredients || []).slice(0, 5).map(ing =>
+                `<span class="recipe-ingredient">${ing.name}</span>`
+              ).join('')}
+              ${recipe.usedIngredients && recipe.usedIngredients.length > 5 ?
+                `<span class="recipe-ingredient">+${recipe.usedIngredients.length - 5} more</span>` : ''}
+            </div>
+          </div>
+          <div class="recipe-actions">
+            <button class="view-recipe-btn" onclick="viewRecipe(${recipe.id})">
+              👀 View Recipe
+            </button>
+          </div>
+        </div>
+      `;
+
+      return card;
+    }
+
+    function viewRecipe(recipeId) {
+      // Open recipe in new tab using Spoonacular's recipe page
+      window.open(`https://spoonacular.com/recipes/-${recipeId}`, '_blank');
+    }
+
+    function showError(message) {
+      const errorMessage = document.getElementById('errorMessage');
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+    }
+
+    function goBack() {
+      // Go back to the insert ingredients page
+      window.location.replace('insert.html');
+    }
+
+    // Initialize page when loaded
+    window.addEventListener('load', () => {
+      displayIngredients();
+
+      // Auto-search if we have ingredients
+      if (currentIngredients.length > 0) {
+        // Small delay to let the page render
+        setTimeout(() => {
+          findRecipes();
+        }, 500);
+      }
+    });
+  </script>
+</body>
+</html>
