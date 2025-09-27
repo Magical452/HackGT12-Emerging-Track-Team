@@ -10,15 +10,22 @@
       padding: 0;
       box-sizing: border-box;
     }
+    html {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      background-size: cover;
+    }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       margin: 0;
       padding: 0;
+      background: transparent;
     }
 
     .container {
@@ -100,7 +107,13 @@
 
       .button {
         width: 100%;
-        max-width: 250px;
+        max-width: none;
+        margin: 8px 0;
+        height: auto;
+        min-height: 64px;
+        font-size: 20px;
+        padding: 14px 18px;
+        border-radius: 14px;
       }
     }
   </style>
