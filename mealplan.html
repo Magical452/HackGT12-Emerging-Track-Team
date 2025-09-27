@@ -11,12 +11,19 @@
       box-sizing: border-box;
     }
 
+    html {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      background-size: cover;
+    }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
       color: white;
       padding: 20px;
+      background: transparent;
     }
 
     .container {
@@ -263,6 +270,24 @@
 
       .search-btn {
         width: 100%;
+      }
+      
+      /* Make action buttons easier to tap on phones */
+      .view-recipe-btn {
+        width: 100%;
+        display: block;
+        padding: 12px 16px;
+        margin-top: 8px;
+        border-radius: 10px;
+      }
+
+      .back-btn {
+        position: static;
+        width: 100%;
+        margin-top: 16px;
+        right: auto;
+        bottom: auto;
+        border-radius: 10px;
       }
     }
   </style>

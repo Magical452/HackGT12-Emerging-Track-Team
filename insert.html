@@ -11,9 +11,15 @@
       box-sizing: border-box;
     }
 
+    html {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      background-size: cover;
+    }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -21,6 +27,7 @@
       justify-content: center;
       color: white;
       padding: 20px;
+      background: transparent;
     }
 
     .container {
@@ -251,6 +258,21 @@
   padding: 4px 8px;
   border-radius: 12px;
 }
+    
+    @media (max-width: 600px) {
+      .action-buttons {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .meal-plan-btn, .back-btn {
+        width: 100%;
+        flex: none;
+        padding: 16px 18px;
+        font-size: 18px;
+        border-radius: 12px;
+      }
+    }
   </style>
 </head>
 <body>

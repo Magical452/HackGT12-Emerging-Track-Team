@@ -11,15 +11,22 @@
       box-sizing: border-box;
     }
 
+    html {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      background-size: cover;
+    }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       color: white;
+      background: transparent;
     }
 
     .camera-container {
@@ -204,6 +211,26 @@
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
+    }
+    
+    @media (max-width: 600px) {
+      .controls {
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
+        padding: 0 10px;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 14px 18px;
+        font-size: 18px;
+        border-radius: 12px;
+      }
+
+      .captured-image {
+        max-width: 90%;
+      }
     }
   </style>
 </head>
