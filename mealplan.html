@@ -13,15 +13,16 @@
 
     html {
       height: 100%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #BF808B 0%, #FFC5CF 100%);
       background-attachment: fixed;
       background-size: cover;
     }
 
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #BF808B 0%, #FFC5CF 100%);
       min-height: 100vh;
-      color: white;
+      color: black;
       padding: 20px;
       background: transparent;
     }
@@ -40,16 +41,30 @@
       font-size: 3rem;
       font-weight: 700;
       margin-bottom: 10px;
-      background: linear-gradient(45deg, #ff6b6b, #feca57);
+      background: linear-gradient(45deg, black, #3b241a, black);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Keep the emoji outside the gradient text-fill so it stays a solid color */
+    .title-emoji {
+      -webkit-background-clip: initial;
+      background-clip: initial;
+      -webkit-text-fill-color: initial;
+      color: inherit; /* let it follow body color unless overridden */
+      display: inline-block;
+      line-height: 1;
     }
 
     .subtitle {
       font-size: 1.2rem;
       opacity: 0.8;
       margin-bottom: 30px;
+      color: black;
     }
 
     .ingredients-section {
@@ -94,7 +109,7 @@
     }
 
     .search-btn {
-      background: linear-gradient(45deg, #00b894, #00a085);
+      background: linear-gradient(45deg, #b84d52, #9e474b);
       color: white;
       border: none;
       padding: 12px 24px;
@@ -125,18 +140,163 @@
 
     .recipes-section {
       margin-bottom: 30px;
+      position: relative; /* allow absolute children (hearts) to be positioned relative to this section */
     }
 
+    /* Decorative background hearts */
+    .bg-heart-left,
+    .bg-heart-right {
+      position: absolute;
+      /* position them vertically centered relative to the recipes grid */
+      top: 60%;
+      font-size: 260px; /* larger baseline */
+      line-height: 1;
+      pointer-events: none;
+      opacity: 0.10; /* slightly more visible by default */
+      transform: translateY(-50%);
+      filter: drop-shadow(0 16px 40px rgba(0,0,0,0.18));
+      will-change: transform, opacity;
+      z-index: 1; /* behind cards which are z-index >= 1000 */
+      user-select: none;
+    }
+
+    .bg-heart-left {
+      left: -120px; /* sit just outside the left edge of the recipes grid */
+      text-align: left;
+      transform: translateY(-50%) rotate(-8deg);
+      opacity: 0.09;
+      transition: transform 380ms cubic-bezier(.2,.9,.3,1), opacity 380ms ease;
+      transform-origin: center center;
+    }
+
+    .bg-heart-right {
+      right: -120px; /* sit just outside the right edge of the recipes grid */
+      text-align: right;
+      transform: translateY(-50%) rotate(8deg);
+      opacity: 0.09;
+      transition: transform 380ms cubic-bezier(.2,.9,.3,1), opacity 380ms ease;
+      transform-origin: center center;
+    }
+
+    /* Active state when a swipe happens: grow and increase opacity */
+    .bg-heart-left.bg-heart-animate {
+      transform: translateY(-50%) rotate(-8deg) scale(1.6);
+      opacity: 0.55;
+      filter: drop-shadow(0 22px 60px rgba(0,0,0,0.22));
+    }
+
+    .bg-heart-right.bg-heart-animate {
+      transform: translateY(-50%) rotate(8deg) scale(1.6);
+      opacity: 0.55;
+      filter: drop-shadow(0 22px 60px rgba(0,0,0,0.22));
+    }
+
+    /* Stack mode: cards positioned on top of each other so user can swipe through */
     .recipes-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-      gap: 20px;
+      position: relative;
+      width: 100%;
+      min-height: 460px; /* reserve space for stack */
       margin-top: 20px;
+      display: block;
+      perspective: 1200px;
+    }
+
+    .stack-card {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      width: 100%;
+      max-width: 700px;
+      transition: transform 0.35s ease, opacity 0.35s ease;
+      will-change: transform, opacity;
+      cursor: grab;
+      touch-action: pan-y;
+      display: block;
+    }
+
+    /* Swipe emoji animation (floating + fade) */
+    .swipe-emoji {
+      position: absolute;
+      pointer-events: none;
+      font-size: 48px;
+      opacity: 0;
+      transform: translateY(0) scale(0.8);
+      transition: transform 420ms cubic-bezier(.2,.9,.3,1), opacity 420ms ease;
+      z-index: 10050; /* above cards when shown */
+      text-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      will-change: transform, opacity;
+      display: inline-block;
+    }
+
+    .stack-card:active {
+      cursor: grabbing;
+    }
+
+    /* Expanded/fullscreen card state */
+    .stack-card.expanded {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      max-width: none !important;
+      margin: 0 !important;
+      transform: none !important;
+      border-radius: 0 !important;
+      z-index: 9999 !important;
+      overflow: auto;
+      box-shadow: none !important;
+    }
+
+    .stack-card.expanded .recipe-image {
+      height: 40vh;
+      object-fit: cover;
+    }
+
+    .close-expanded-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      border: none;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 18px;
+      display: none;
+      z-index: 10000;
+      cursor: pointer;
+    }
+
+    .stack-card.expanded .close-expanded-btn {
+      display: block;
+    }
+
+    .stack-controls {
+      display: none; /* shown when stack initialized */
+      gap: 12px;
+      justify-content: center;
+      margin-top: 16px;
+      align-items: center;
+    }
+
+    .stack-controls button {
+      background: rgba(0,0,0,0.25);
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
     }
 
     .recipe-card {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
+      background: #ffffff; /* opaque card background */
+      color: #222;
       border-radius: 15px;
       overflow: hidden;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2);
@@ -219,19 +379,18 @@
     }
 
     .back-btn {
-      background: linear-gradient(45deg, #6c5ce7, #a29bfe);
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      font-size: 16px;
+      background: transparent;
+      color: #3b241a;
+      border: 1px solid #3b241a;
+      padding: 0px 8px;
+      font-size: 24px;
       font-weight: 600;
+      line-height: 1;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.3s ease;
       box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
+      
     }
 
     .back-btn:hover {
@@ -271,7 +430,7 @@
       .search-btn {
         width: 100%;
       }
-
+      
       /* Make action buttons easier to tap on phones */
       .view-recipe-btn {
         width: 100%;
@@ -289,14 +448,31 @@
         bottom: auto;
         border-radius: 10px;
       }
+
+      /* On mobile, hide the explicit prev/next controls and floating back button to rely on gestures */
+      .stack-controls {
+        display: none !important;
+      }
+
+      .back-btn {
+        display: none !important;
+      }
+
+      /* Hide large decorative hearts on small screens */
+      .bg-heart-left,
+      .bg-heart-right {
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <button class="back-btn" onclick="goBack()">⬅</button>
+
     <div class="header">
-      <h1 class="title">🍽️ Your Meal Plan</h1>
-      <p class="subtitle">Let's create delicious meals with your ingredients!</p>
+      <h1 class="title"><span class="title-emoji">🍽️</span> Find Your Soulplate</h1>
+      <p class="subtitle">Swipe to find love!</p>
     </div>
 
     <div class="ingredients-section">
@@ -327,18 +503,24 @@
     </div>
 
     <div id="recipesSection" class="recipes-section" style="display: none;">
+      <!-- Decorative background hearts (left: broken heart, right: shining heart) -->
+      <div class="bg-heart-left">💔</div>
+      <div class="bg-heart-right">💖</div>
       <h2 class="ingredients-title">🍳 Recommended Recipes</h2>
       <div id="recipesGrid" class="recipes-grid">
         <!-- Recipes will be populated here -->
       </div>
+      <div class="stack-controls" aria-hidden="false">
+        <button id="prevCardBtn">◀️ Prev</button>
+        <button id="nextCardBtn">Next ▶️</button>
+      </div>
     </div>
-
-    <button class="back-btn" onclick="goBack()">⬅️ Back</button>
   </div>
 
   <script>
     // Replace with your Spoonacular API key
-    const SPOONACULAR_API_KEY = '140f9ddf755e480d8c6ce473d447be89';
+
+    const SPOONACULAR_API_KEY = '7610642352f94175a8d00d24eaad2a77';
     const OPENAI_API_KEY = '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';
 
     let currentIngredients = [];
@@ -492,13 +674,26 @@
 
       for (const recipe of recipes) {
         const recipeCard = createRecipeCard(recipe);
+        // add stack-card class for stacking
+        recipeCard.classList.add('stack-card');
         recipesGrid.appendChild(recipeCard);
       }
+
+      // Reset stack index on initial render
+      if (!append) {
+        stackIndex = 0;
+      }
+
+      // Initialize/update stack behavior so appended cards are included
+      initializeCardStack();
     }
 
     function createRecipeCard(recipe) {
       const card = document.createElement('div');
       card.className = 'recipe-card';
+      // store recipe id and url on the card for swipe actions
+      card.dataset.recipeId = recipe.id;
+      card.dataset.recipeUrl = `https://spoonacular.com/recipes/-${recipe.id}`;
 
       const missingCount = recipe.missedIngredientCount || 0;
       const usedCount = recipe.usedIngredientCount || 0;
@@ -529,13 +724,271 @@
         </div>
       `;
 
+      // add a close button for expanded mode; will be shown only when expanded
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'close-expanded-btn';
+      closeBtn.setAttribute('aria-label', 'Close');
+      closeBtn.textContent = '✕';
+      closeBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        collapseCard(card);
+      });
+      card.appendChild(closeBtn);
+
       return card;
+    }
+
+    // Helper to animate and remove a specific card to a given side
+    function removeCard(card, direction = 'left') {
+      if (!card) return;
+      // show swipe emoji (left => broken heart, right => shining heart)
+      showSwipeEmoji(direction, card);
+      card.style.transition = 'transform 0.35s ease, opacity 0.35s ease';
+      if (direction === 'right') {
+        card.style.transform = 'translateX(120%) rotate(12deg)';
+      } else {
+        card.style.transform = 'translateX(-120%) rotate(-12deg)';
+      }
+      card.style.opacity = '0';
+      setTimeout(() => {
+        if (card && card.parentNode) card.parentNode.removeChild(card);
+        initializeCardStack();
+      }, 360);
+    }
+
+    // show a floating emoji near the card when swiped
+    function showSwipeEmoji(direction, card) {
+      try {
+        // also animate the large background heart for stronger feedback
+        animateBgHeart(direction);
+        const section = document.querySelector('.recipes-section') || document.body;
+
+        // Remove any existing swipe emojis (avoid stacking) for a clean single animation
+        try {
+          const existing = section.querySelectorAll('.swipe-emoji');
+          existing.forEach(el => { try { el.remove(); } catch(e){} });
+        } catch (e) {}
+
+        const emoji = document.createElement('div');
+        emoji.className = 'swipe-emoji';
+        emoji.textContent = direction === 'right' ? '💖' : '💔';
+
+        // position near the card (centered horizontally, slightly above)
+        const cardRect = card.getBoundingClientRect();
+        const sectionRect = section.getBoundingClientRect();
+        const left = cardRect.left - sectionRect.left + (cardRect.width / 2) - 24; // center - half emoji
+        const top = cardRect.top - sectionRect.top + 20; // slightly above the card
+
+        emoji.style.left = `${left}px`;
+        emoji.style.top = `${top}px`;
+
+        // append and animate
+        section.appendChild(emoji);
+
+        // force layout then animate
+        requestAnimationFrame(() => {
+          emoji.style.opacity = '1';
+          emoji.style.transform = 'translateY(-48px) scale(1.25)';
+        });
+
+        // remove after animation
+        setTimeout(() => {
+          emoji.style.opacity = '0';
+          emoji.style.transform = 'translateY(-80px) scale(0.9)';
+          setTimeout(() => { try { emoji.remove(); } catch(e){} }, 400);
+        }, 520);
+      } catch (e) {
+        // ignore positioning errors
+      }
+    }
+
+    // briefly grow and brighten the background heart on the swiped side
+    function animateBgHeart(direction) {
+      try {
+        const cls = direction === 'right' ? '.bg-heart-right' : '.bg-heart-left';
+        const el = document.querySelector(cls);
+        if (!el) return;
+  el.classList.add('bg-heart-animate');
+  // remove after the animation duration (longer so it feels impactful)
+  setTimeout(() => el.classList.remove('bg-heart-animate'), 800);
+      } catch (e) {
+        // ignore
+      }
     }
 
     function viewRecipe(recipeId) {
       // Open recipe in new tab using Spoonacular's recipe page
       window.open(`https://spoonacular.com/recipes/-${recipeId}`, '_blank');
     }
+
+    // Stack implementation (top card is always first in DOM)
+    function initializeCardStack() {
+      const cards = Array.from(document.querySelectorAll('.recipes-grid .stack-card'));
+      const controls = document.querySelector('.stack-controls');
+
+      // show controls when cards exist
+      if (controls) controls.style.display = cards.length ? 'flex' : 'none';
+
+      // position and style each card (top is index 0)
+      cards.forEach((card, i) => {
+        const offset = i; // top card 0, next 1, ...
+        const scale = Math.max(0.92, 1 - offset * 0.04);
+        const y = offset * 14; // vertical offset
+        const rot = offset * -2; // subtle rotation
+        card.style.zIndex = String(1000 - i);
+        card.style.opacity = offset > 4 ? '0' : '1';
+        card.style.transform = `translateY(${y}px) scale(${scale}) rotate(${rot}deg)`;
+        card.dataset.index = i;
+        card.style.transition = 'transform 0.35s ease, opacity 0.35s ease';
+        addDragHandlers(card);
+      });
+    }
+
+    function removeTopCard() {
+      const cards = Array.from(document.querySelectorAll('.recipes-grid .stack-card'));
+      if (cards.length === 0) return;
+      const top = cards[0];
+      removeCard(top, 'left');
+    }
+
+    // Expand a card to fullscreen (mobile-friendly). Adds .expanded and hides body scroll.
+    function expandCard(card) {
+      if (!card) return;
+      // collapse any currently expanded card first
+      const currently = document.querySelector('.recipes-grid .stack-card.expanded');
+      if (currently && currently !== card) collapseCard(currently);
+
+      card.classList.add('expanded');
+      // lock body scroll while expanded
+      document.body.style.overflow = 'hidden';
+      // ensure the card is focused for keyboard users
+      card.setAttribute('tabindex', '-1');
+      card.focus();
+    }
+
+    function collapseCard(card) {
+      if (!card) return;
+      card.classList.remove('expanded');
+      document.body.style.overflow = '';
+      try { card.removeAttribute('tabindex'); } catch (e) {}
+      // reinitialize stack positions
+      initializeCardStack();
+    }
+
+    function showNextCard() {
+      removeTopCard();
+    }
+
+    function showPrevCard() {
+      // Not supported after deletion of top cards; keep as no-op or could implement undo stack
+      // For now, do nothing
+      return;
+    }
+
+    // Drag/swipe handlers (mouse + touch)
+    function addDragHandlers(card) {
+      let startX = 0, currentX = 0, dragging = false;
+
+      // Helper to safely read a clientX from mouse or touch events
+      function getClientXFromEvent(e) {
+        if (!e) return currentX || 0;
+        if (e.type && e.type.startsWith && e.type.startsWith('touch')) {
+          // touch events can have changedTouches on touchend
+          const touch = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]);
+          return touch ? touch.clientX : currentX || 0;
+        }
+        return e.clientX != null ? e.clientX : (currentX || 0);
+      }
+
+      function onStart(e) {
+        // only allow dragging of the top card
+        const idx = Number(card.dataset.index || 0);
+        if (idx !== 0) return;
+        dragging = true;
+        startX = getClientXFromEvent(e);
+        currentX = startX;
+        card.style.transition = 'none';
+
+        // Attach move/end listeners only while dragging to avoid listener buildup
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('touchmove', onMove, {passive: true});
+        window.addEventListener('mouseup', onEnd);
+        window.addEventListener('touchend', onEnd);
+      }
+
+      function onMove(e) {
+        if (!dragging) return;
+        currentX = getClientXFromEvent(e);
+        const dx = currentX - startX;
+        // apply transform relative to current stack layout
+        card.style.transform = `translateX(${dx}px) rotate(${dx * 0.02}deg)`;
+      }
+
+      function onEnd(e) {
+        if (!dragging) return;
+        dragging = false;
+
+        // Remove temporary listeners added during drag
+        try {
+          window.removeEventListener('mousemove', onMove);
+          window.removeEventListener('touchmove', onMove);
+          window.removeEventListener('mouseup', onEnd);
+          window.removeEventListener('touchend', onEnd);
+        } catch (err) {}
+
+        const dx = currentX - startX;
+        card.style.transition = 'transform 0.35s ease, opacity 0.35s ease';
+
+        // If swiped sufficiently to the left, remove top card
+        if (dx < -80) {
+          removeCard(card, 'left');
+        } else if (dx > 80) {
+          // Right swipe: on mobile expand the card, on desktop open link
+          const isMobile = window.innerWidth <= 768 || (('ontouchstart' in window) && navigator.maxTouchPoints > 0);
+          expandCard(card);
+        } else {
+          // reset position
+          initializeCardStack();
+        }
+      }
+
+      // Start listeners on the card only; move/end are attached during drag
+      card.addEventListener('mousedown', onStart);
+      card.addEventListener('touchstart', onStart, {passive: true});
+    }
+
+    // Keyboard navigation: allow arrow keys to swipe cards (left = remove, right = expand)
+    window.addEventListener('keydown', (e) => {
+      try {
+        // ignore when the user is typing in a form field
+        const tag = (e.target && e.target.tagName) || '';
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) || (e.target && e.target.isContentEditable)) return;
+
+        // Right arrow -> expand the top card (same as right-swipe)
+        if (e.key === 'ArrowRight' || e.key === 'd') {
+          const cards = document.querySelectorAll('.recipes-grid .stack-card');
+          const top = cards[0];
+          if (top) {
+            expandCard(top);
+          } else {
+            showNextCard();
+          }
+        }
+
+        // Left arrow -> remove the top card (same as left-swipe)
+        if (e.key === 'ArrowLeft' || e.key === 'a') {
+          const cards = document.querySelectorAll('.recipes-grid .stack-card');
+          const top = cards[0];
+          if (top) {
+            removeCard(top, 'left');
+          } else {
+            showPrevCard();
+          }
+        }
+      } catch (err) {
+        // ignore
+      }
+    });
 
     function showError(message) {
       const errorMessage = document.getElementById('errorMessage');
@@ -558,6 +1011,16 @@
         setTimeout(() => {
           findRecipes();
         }, 500);
+      }
+    });
+
+    // Wire stack control buttons (delegated in case they are added later)
+    document.addEventListener('click', (e) => {
+      if (e.target && e.target.id === 'nextCardBtn') {
+        showNextCard();
+      }
+      if (e.target && e.target.id === 'prevCardBtn') {
+        showPrevCard();
       }
     });
   </script>
