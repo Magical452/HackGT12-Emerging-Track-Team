@@ -127,16 +127,98 @@
       margin-bottom: 30px;
     }
 
+    /* Stack mode: cards positioned on top of each other so user can swipe through */
     .recipes-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-      gap: 20px;
+      position: relative;
+      width: 100%;
+      min-height: 460px; /* reserve space for stack */
       margin-top: 20px;
+      display: block;
+      perspective: 1200px;
+    }
+
+    .stack-card {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      width: 100%;
+      max-width: 700px;
+      transition: transform 0.35s ease, opacity 0.35s ease;
+      will-change: transform, opacity;
+      cursor: grab;
+      touch-action: pan-y;
+      display: block;
+    }
+
+    .stack-card:active {
+      cursor: grabbing;
+    }
+
+    /* Expanded/fullscreen card state */
+    .stack-card.expanded {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      max-width: none !important;
+      margin: 0 !important;
+      transform: none !important;
+      border-radius: 0 !important;
+      z-index: 9999 !important;
+      overflow: auto;
+      box-shadow: none !important;
+    }
+
+    .stack-card.expanded .recipe-image {
+      height: 40vh;
+      object-fit: cover;
+    }
+
+    .close-expanded-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      border: none;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 18px;
+      display: none;
+      z-index: 10000;
+      cursor: pointer;
+    }
+
+    .stack-card.expanded .close-expanded-btn {
+      display: block;
+    }
+
+    .stack-controls {
+      display: none; /* shown when stack initialized */
+      gap: 12px;
+      justify-content: center;
+      margin-top: 16px;
+      align-items: center;
+    }
+
+    .stack-controls button {
+      background: rgba(0,0,0,0.25);
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
     }
 
     .recipe-card {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
+      background: #ffffff; /* opaque card background */
+      color: #222;
       border-radius: 15px;
       overflow: hidden;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2);
@@ -289,6 +371,15 @@
         bottom: auto;
         border-radius: 10px;
       }
+
+      /* On mobile, hide the explicit prev/next controls and floating back button to rely on gestures */
+      .stack-controls {
+        display: none !important;
+      }
+
+      .back-btn {
+        display: none !important;
+      }
     }
   </style>
 </head>
@@ -331,6 +422,10 @@
       <div id="recipesGrid" class="recipes-grid">
         <!-- Recipes will be populated here -->
       </div>
+      <div class="stack-controls" aria-hidden="false">
+        <button id="prevCardBtn">◀️ Prev</button>
+        <button id="nextCardBtn">Next ▶️</button>
+      </div>
     </div>
 
     <button class="back-btn" onclick="goBack()">⬅️ Back</button>
@@ -338,7 +433,7 @@
 
   <script>
     // Replace with your Spoonacular API key
-    const SPOONACULAR_API_KEY = 'c4f5697c8ecc401990c0f03386d913e7';
+    const SPOONACULAR_API_KEY = '140f9ddf755e480d8c6ce473d447be89';
     const OPENAI_API_KEY = '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';
 
     let currentIngredients = [];
@@ -492,13 +587,26 @@
 
       for (const recipe of recipes) {
         const recipeCard = createRecipeCard(recipe);
+        // add stack-card class for stacking
+        recipeCard.classList.add('stack-card');
         recipesGrid.appendChild(recipeCard);
       }
+
+      // Reset stack index on initial render
+      if (!append) {
+        stackIndex = 0;
+      }
+
+      // Initialize/update stack behavior so appended cards are included
+      initializeCardStack();
     }
 
     function createRecipeCard(recipe) {
       const card = document.createElement('div');
       card.className = 'recipe-card';
+      // store recipe id and url on the card for swipe actions
+      card.dataset.recipeId = recipe.id;
+      card.dataset.recipeUrl = `https://spoonacular.com/recipes/-${recipe.id}`;
 
       const missingCount = recipe.missedIngredientCount || 0;
       const usedCount = recipe.usedIngredientCount || 0;
@@ -529,13 +637,162 @@
         </div>
       `;
 
+      // add a close button for expanded mode; will be shown only when expanded
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'close-expanded-btn';
+      closeBtn.setAttribute('aria-label', 'Close');
+      closeBtn.textContent = '✕';
+      closeBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        collapseCard(card);
+      });
+      card.appendChild(closeBtn);
+
       return card;
+    }
+
+    // Helper to animate and remove a specific card to a given side
+    function removeCard(card, direction = 'left') {
+      if (!card) return;
+      card.style.transition = 'transform 0.35s ease, opacity 0.35s ease';
+      if (direction === 'right') {
+        card.style.transform = 'translateX(120%) rotate(12deg)';
+      } else {
+        card.style.transform = 'translateX(-120%) rotate(-12deg)';
+      }
+      card.style.opacity = '0';
+      setTimeout(() => {
+        if (card && card.parentNode) card.parentNode.removeChild(card);
+        initializeCardStack();
+      }, 360);
     }
 
     function viewRecipe(recipeId) {
       // Open recipe in new tab using Spoonacular's recipe page
       window.open(`https://spoonacular.com/recipes/-${recipeId}`, '_blank');
     }
+
+    // Stack implementation (top card is always first in DOM)
+    function initializeCardStack() {
+      const cards = Array.from(document.querySelectorAll('.recipes-grid .stack-card'));
+      const controls = document.querySelector('.stack-controls');
+
+      // show controls when cards exist
+      if (controls) controls.style.display = cards.length ? 'flex' : 'none';
+
+      // position and style each card (top is index 0)
+      cards.forEach((card, i) => {
+        const offset = i; // top card 0, next 1, ...
+        const scale = Math.max(0.92, 1 - offset * 0.04);
+        const y = offset * 14; // vertical offset
+        const rot = offset * -2; // subtle rotation
+        card.style.zIndex = String(1000 - i);
+        card.style.opacity = offset > 4 ? '0' : '1';
+        card.style.transform = `translateY(${y}px) scale(${scale}) rotate(${rot}deg)`;
+        card.dataset.index = i;
+        card.style.transition = 'transform 0.35s ease, opacity 0.35s ease';
+        addDragHandlers(card);
+      });
+    }
+
+    function removeTopCard() {
+      const cards = Array.from(document.querySelectorAll('.recipes-grid .stack-card'));
+      if (cards.length === 0) return;
+      const top = cards[0];
+      removeCard(top, 'left');
+    }
+
+    // Expand a card to fullscreen (mobile-friendly). Adds .expanded and hides body scroll.
+    function expandCard(card) {
+      if (!card) return;
+      // collapse any currently expanded card first
+      const currently = document.querySelector('.recipes-grid .stack-card.expanded');
+      if (currently && currently !== card) collapseCard(currently);
+
+      card.classList.add('expanded');
+      // lock body scroll while expanded
+      document.body.style.overflow = 'hidden';
+      // ensure the card is focused for keyboard users
+      card.setAttribute('tabindex', '-1');
+      card.focus();
+    }
+
+    function collapseCard(card) {
+      if (!card) return;
+      card.classList.remove('expanded');
+      document.body.style.overflow = '';
+      try { card.removeAttribute('tabindex'); } catch (e) {}
+      // reinitialize stack positions
+      initializeCardStack();
+    }
+
+    function showNextCard() {
+      removeTopCard();
+    }
+
+    function showPrevCard() {
+      // Not supported after deletion of top cards; keep as no-op or could implement undo stack
+      // For now, do nothing
+      return;
+    }
+
+    // Drag/swipe handlers (mouse + touch)
+    function addDragHandlers(card) {
+      let startX = 0, currentX = 0, dragging = false;
+
+      function onStart(e) {
+        // only allow dragging of the top card
+        const idx = Number(card.dataset.index || 0);
+        if (idx !== 0) return;
+        dragging = true;
+        startX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+        card.style.transition = 'none';
+      }
+
+      function onMove(e) {
+        if (!dragging) return;
+        currentX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+        const dx = currentX - startX;
+        card.style.transform = `translateX(${dx}px) rotate(${dx * 0.02}deg)`;
+      }
+
+      function onEnd(e) {
+        if (!dragging) return;
+        dragging = false;
+        const dx = currentX - startX;
+        card.style.transition = 'transform 0.35s ease, opacity 0.35s ease';
+        // If swiped sufficiently to the left, remove top card
+        if (dx < -80) {
+          removeCard(card, 'left');
+        } else if (dx > 80) {
+          // Right swipe: on mobile expand the card, on desktop open link
+          const isMobile = window.innerWidth <= 768 || (('ontouchstart' in window) && navigator.maxTouchPoints > 0);
+          if (isMobile) {
+            expandCard(card);
+          } else {
+            const url = card.dataset.recipeUrl;
+            if (url) window.open(url, '_blank');
+            removeCard(card, 'right');
+          }
+        } else {
+          // reset position
+          initializeCardStack();
+        }
+      }
+
+      card.addEventListener('mousedown', onStart);
+      card.addEventListener('touchstart', onStart, {passive: true});
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('touchmove', onMove, {passive: true});
+      window.addEventListener('mouseup', onEnd);
+      window.addEventListener('touchend', onEnd);
+    }
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'd') showNextCard();
+      if (e.key === 'ArrowLeft' || e.key === 'a') showPrevCard();
+    });
 
     function showError(message) {
       const errorMessage = document.getElementById('errorMessage');
@@ -558,6 +815,16 @@
         setTimeout(() => {
           findRecipes();
         }, 500);
+      }
+    });
+
+    // Wire stack control buttons (delegated in case they are added later)
+    document.addEventListener('click', (e) => {
+      if (e.target && e.target.id === 'nextCardBtn') {
+        showNextCard();
+      }
+      if (e.target && e.target.id === 'prevCardBtn') {
+        showPrevCard();
       }
     });
   </script>
