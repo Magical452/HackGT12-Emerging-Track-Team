@@ -658,15 +658,6 @@
       initializeCardStack();
     }
 
-    async function displayRecipes(recipes) {
-      const recipesGrid = document.getElementById('recipiesGrid');
-      recipesGrid.innerHTML = ' ';
-      for (const recipe of recipes) {
-        const recipeCard = createRecipeCard(recipe);
-        recipesGrid.appendChild(recipeCard);
-      }
-    }
-
     function createRecipeCard(recipe) {
       const card = document.createElement('div');
       card.className = 'recipe-card';
