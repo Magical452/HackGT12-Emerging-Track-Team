@@ -917,10 +917,37 @@
       window.addEventListener('touchend', onEnd);
     }
 
-    // Keyboard navigation
+    // Keyboard navigation: allow arrow keys to swipe cards (left = remove, right = expand)
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowRight' || e.key === 'd') showNextCard();
-      if (e.key === 'ArrowLeft' || e.key === 'a') showPrevCard();
+      try {
+        // ignore when the user is typing in a form field
+        const tag = (e.target && e.target.tagName) || '';
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) || (e.target && e.target.isContentEditable)) return;
+
+        // Right arrow -> expand the top card (same as right-swipe)
+        if (e.key === 'ArrowRight' || e.key === 'd') {
+          const cards = document.querySelectorAll('.recipes-grid .stack-card');
+          const top = cards[0];
+          if (top) {
+            expandCard(top);
+          } else {
+            showNextCard();
+          }
+        }
+
+        // Left arrow -> remove the top card (same as left-swipe)
+        if (e.key === 'ArrowLeft' || e.key === 'a') {
+          const cards = document.querySelectorAll('.recipes-grid .stack-card');
+          const top = cards[0];
+          if (top) {
+            removeCard(top, 'left');
+          } else {
+            showPrevCard();
+          }
+        }
+      } catch (err) {
+        // ignore
+      }
     });
 
     function showError(message) {
