@@ -11,6 +11,13 @@
       box-sizing: border-box;
     }
 
+    html {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      background-size: cover;
+    }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: linear-gradient(135deg, #FFC5CF 0%, #BF808B 100%);
@@ -21,6 +28,7 @@
       justify-content: center;
       color: white;
       padding: 20px;
+      background: transparent;
     }
 
     .container {
@@ -269,6 +277,21 @@
   padding: 4px 8px;
   border-radius: 12px;
 }
+    
+    @media (max-width: 600px) {
+      .action-buttons {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .meal-plan-btn, .back-btn {
+        width: 100%;
+        flex: none;
+        padding: 16px 18px;
+        font-size: 18px;
+        border-radius: 12px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -739,10 +762,10 @@
         if (mealPlanBtn) mealPlanBtn.disabled = false;
         if (ingredientCount) ingredientCount.textContent = `(${selectedFoods.length} ingredient${selectedFoods.length !== 1 ? 's' : ''})`;
       }
-
       // Save ingredients to localStorage
       localStorage.setItem('selectedIngredients', JSON.stringify(selectedFoods));
     }
+
 
      function goToMealPlan() {
       if (selectedFoods.length === 0) {
@@ -762,7 +785,7 @@
     }
 
     function goBack() {
-      window.location.replace('index.html'); // or whatever your main page is called
+      window.location.href = 'index.html'; // or whatever your main page is called
     }
   </script>
 </body>
