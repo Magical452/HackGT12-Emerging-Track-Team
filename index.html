@@ -12,7 +12,7 @@
     }
     html {
       height: 100%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #FFC5CF 0%, #BF808B 100%);
       background-attachment: fixed;
       background-size: cover;
     }
@@ -21,18 +21,53 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       min-height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       margin: 0;
-      padding: 0;
+      padding: 24px 12px 48px;
       background: transparent;
+    }
+
+    .hero {
+      width: 100%;
+      padding: 28px 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .hero-inner {
+      max-width: 1000px;
+      text-align: center;
+      color: #341a1a;
+      background: rgba(255,255,255,0.08);
+      padding: 18px 22px;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    }
+
+    .hero h1 {
+      font-size: 28px;
+      color: #2d1b4a; /* dark purple */
+      margin-bottom: 8px;
+    }
+
+    .blurb {
+      color: rgba(20,18,24,0.85);
+      font-size: 15px;
+      line-height: 1.4;
+      margin: 0;
     }
 
     .container {
       display: flex;
-      width: 100vw;
-      height: 100vh;
-      gap: 0;
+      width: 100%;
+      max-width: 1100px;
+      margin: 24px auto 0;
+      gap: 28px;
+      justify-content: center;
+      align-items: stretch;
     }
 
     .button {
@@ -47,13 +82,13 @@
       letter-spacing: 1px;
       position: relative;
       overflow: hidden;
-      flex: 1;
+      flex: 1 1 48%;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 10vh 2.5vw;
-      height: 80vh;
-      border-radius: 20px;
+      margin: 0;
+      min-height: 220px;
+      border-radius: 18px;
     }
 
     .button::before {
@@ -83,26 +118,27 @@
     }
 
     .button.camera {
-      background: linear-gradient(45deg, #00b894, #00a085);
+      background: linear-gradient(44deg, #6c5ce7, #a29bfe);
     }
 
     .button.camera:hover {
-      background: linear-gradient(45deg, #00a085, #00907a);
+      background: linear-gradient(46deg, #a29bfe, #6c5ce7);
     }
 
     .button.insert {
-      background: linear-gradient(45deg, #e17055, #d63031);
+      background: linear-gradient(45deg, #dd6161, #9e3737);
     }
 
     .button.insert:hover {
-      background: linear-gradient(45deg, #d63031, #c0392b);
+      background: linear-gradient(45deg, #9e3737, #dd6161);
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 900px) {
       .container {
         flex-direction: column;
-        gap: 30px;
-        padding: 20px;
+        gap: 18px;
+        padding: 0 12px;
+        align-items: stretch;
       }
 
       .button {
@@ -119,13 +155,19 @@
   </style>
 </head>
 <body>
+  <header class="hero">
+    <div class="hero-inner">
+      <h1>FoodFindr</h1>
+      <p class="blurb">Take a picture of your ingredients or write them as a list. Then, you can start swiping to find your soulplate!</p>
+    </div>
+  </header>
   <div class="container">
     <button class="button camera" onclick="useCamera()">
       📷 Use Camera
     </button>
 
     <button class="button insert" onclick="insertFile()">
-      📁 Insert
+      ✍🏻 List
     </button>
   </div>
 
