@@ -13,7 +13,7 @@
 
     html {
       height: 100%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #BF808B 0%, #FFC5CF 100%);
       background-attachment: fixed;
       background-size: cover;
     }
@@ -45,6 +45,19 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Keep the emoji outside the gradient text-fill so it stays a solid color */
+    .title-emoji {
+      -webkit-background-clip: initial;
+      background-clip: initial;
+      -webkit-text-fill-color: initial;
+      color: inherit; /* let it follow body color unless overridden */
+      display: inline-block;
+      line-height: 1;
     }
 
     .subtitle {
@@ -389,7 +402,8 @@
     <button class="back-btn" onclick="goBack()">⬅</button>
 
     <div class="header">
-      <h1 class="title">🍽️ Find Your Soulplate</h1>
+      <h1 class="title"><span class="title-emoji">🍽️</span> Find Your Soulplate</h1>
+
       <p class="subtitle">Swipe to find love!</p>
     </div>
 
