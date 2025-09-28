@@ -35,33 +35,30 @@
       border-radius: 20px;
       padding: 24px 28px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.35);
-  /* balanced container width: large enough but not huge */
-  width: min(92vw, 1000px);
-  max-width: 1000px;
+      width: min(92vw, 1000px);
+      max-width: 1000px;
       max-height: 92vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      position: relative; /* allow absolute children like the back button */
+      position: relative;
     }
 
     #video {
       width: 100%;
-      max-width: 900px; /* moderate video area */
+      max-width: 900px;
       height: auto;
       border-radius: 15px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.3);
       background: #000;
     }
 
-    /* Responsive: keep it compact on small screens */
     @media (max-width: 480px) {
       .camera-container { max-width: 90vw; padding: 18px; }
       #video { max-width: 100%; }
       .status { max-width: 80%; }
     }
 
-    /* On very large screens, constrain the video width proportionally */
     @media (min-width: 1600px) {
       #video { max-width: 1400px; }
       .camera-container { max-width: 1500px; }
@@ -80,12 +77,13 @@
       align-items: center;
       justify-content: flex-start;
       gap: 16px;
-      padding: 0 32px; /* horizontal spacing preserved; vertical padding handled by container */
+      padding: 0 32px;
       width: 100%;
-      position: static; /* keep container as the positioned ancestor */
-      height: 56px; /* fixed header height to keep vertical alignment consistent */
+      position: static;
+      height: 56px;
     }
 
+    /* FIXED BACK BUTTON STYLES */
     .back-btn {
       background: linear-gradient(45deg, #6c5ce7, #a29bfe);
       color: white;
@@ -96,18 +94,28 @@
       line-height: 1;
       border-radius: 10px;
       cursor: pointer;
-      transition: transform 0.12s ease, box-shadow 0.12s ease;
+      transition: all 0.2s ease; /* Changed to 'all' and increased duration */
       box-shadow: 0 6px 18px rgba(0,0,0,0.25);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      position: absolute; /* position relative to .camera-container */
-      left: 12px; /* small inset from the container left edge */
-      top: 24px; /* align with header vertical position */
+      position: absolute;
+      left: 12px;
+      top: 24px;
+      z-index: 10; /* Added z-index to ensure it's on top */
+      min-width: 44px; /* Ensure minimum touch target */
+      min-height: 44px;
     }
 
     .back-btn:hover {
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      transform: translateY(-2px); /* Added transform for more visible effect */
+      box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+      background: linear-gradient(45deg, #5a4fcf, #8b7eff); /* Slightly different gradient on hover */
+    }
+
+    .back-btn:active {
+      transform: translateY(0); /* Reset transform on click */
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
 
     .back-btn:focus {
@@ -116,20 +124,23 @@
     }
 
     .status {
-      /* center visually without affecting flow so back button won't overlap */
       position: absolute;
       left: 50%;
-      top: 24px; /* align with the back button */
+      top: 24px;
       transform: translateX(-50%);
       max-width: 80%;
       text-align: center;
       margin: 0;
       font-size: 18px;
-      /* default to truncation; JS will enable wrapping if container capped */
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       line-height: 1.2;
+      padding: 6px 8px;
+      border-radius: 8px;
+      font-weight: bold;
+      background: rgba(255, 255, 255, 0.2);
+      color: #6c5ce7;
     }
 
     .btn {
@@ -168,12 +179,6 @@
       background: linear-gradient(45deg, #6c5ce7, #a29bfe);
     }
 
-    .btn.back {
-      background: linear-gradient(45deg, #6c5ce7, #a29bfe);
-    }
-
-
-    /* Make the primary start button match the purple/blue theme */
     #startBtn {
       background: linear-gradient(45deg, #6c5ce7, #a29bfe);
       box-shadow: 0 6px 18px rgba(0,0,0,0.22);
@@ -184,26 +189,16 @@
       box-shadow: 0 10px 28px rgba(0,0,0,0.28);
     }
 
-    .status {
-      margin-bottom: 20px;
-      padding: 6px 8px;
-      border-radius: 8px;
-      font-weight: bold;
-      background: rgba(255, 255, 255, 0.2);
-      color: #6c5ce7;
-      text-align: center;
-    }
-
     .error {
-      background: rgba(231, 76, 60, 0.3);
+      background: rgba(231, 76, 60, 0.3) !important;
     }
 
     .success {
-      background: rgba(46, 204, 113, 0.3);
+      background: rgba(46, 204, 113, 0.3) !important;
     }
 
     .loading {
-      background: rgba(241, 196, 15, 0.3);
+      background: rgba(241, 196, 15, 0.3) !important;
     }
 
     canvas {
@@ -333,8 +328,7 @@
       .btn {
         width: 100%;
       }
-      
-      /* On mobile, allow the background to scroll with content for smoother performance */
+
       html {
         background-attachment: scroll;
       }
@@ -356,12 +350,8 @@
       <button id="startBtn" class="btn">📷 Turn On Camera</button>
       <button id="stopBtn" class="btn stop" style="display: none;">⏹️ Stop Camera</button>
       <button id="captureBtn" class="btn capture" style="display: none;">📸 Capture Photo</button>
-
-      <!-- <button id="backBtn" class="btn back">⬅️ Back to Main</button> commented out bc the back button I added isn't working and this is the old one-->
-
       <button id="analyzeBtn" class="btn analyze" style="display: none;">🔍 Analyze Food</button>
       <button id="mealPlanBtn" class="btn meal-plan" style="display: none;">🍽️ Create Meal Plan</button>
-
     </div>
 
     <img id="capturedImage" class="captured-image" style="display: none;" />
@@ -391,7 +381,6 @@
     const startBtn = document.getElementById('startBtn');
     const stopBtn = document.getElementById('stopBtn');
     const captureBtn = document.getElementById('captureBtn');
-    // backBtn element is defined in the markup with id="backBtn"
     const analyzeBtn = document.getElementById('analyzeBtn');
     const mealPlanBtn = document.getElementById('mealPlanBtn');
     const backBtn = document.getElementById('backBtn');
@@ -408,7 +397,7 @@
     let selectedIngredients = [];
 
     // *** ADD YOUR OPENAI API KEY HERE ***
-    const OPENAI_API_KEY = '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'; // Replace with your actual API key
+    const OPENAI_API_KEY = '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';
 
     // Emoji mapping for common ingredients
     const ingredientEmojis = {
@@ -451,12 +440,25 @@
     captureBtn.addEventListener('click', capturePhoto);
     analyzeBtn.addEventListener('click', analyzeFood);
     mealPlanBtn.addEventListener('click', (event) => {
-      event.preventDefault(); // Prevent any default behavior
+      event.preventDefault();
       console.log('Meal Plan button clicked!');
       goToMealPlan();
     });
-    backBtn.addEventListener('click', () => {
+
+    // FIXED BACK BUTTON EVENT LISTENER
+    backBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      console.log('Back button clicked!');
       window.location.href = 'index.html';
+    });
+
+    // Test the back button with mouse events for debugging
+    backBtn.addEventListener('mouseenter', () => {
+      console.log('Back button mouseenter');
+    });
+
+    backBtn.addEventListener('mouseleave', () => {
+      console.log('Back button mouseleave');
     });
 
     // Adjust camera container width so back button + status/title fit on one line
@@ -469,28 +471,21 @@
       const padLeft = parseFloat(computed.paddingLeft) || 0;
       const padRight = parseFloat(computed.paddingRight) || 0;
 
-      // gap between back button and status (header-row gap)
       const headerRow = document.querySelector('.header-row');
       const gap = headerRow ? parseFloat(window.getComputedStyle(headerRow).gap) || 16 : 16;
 
       const backW = Math.ceil(backBtn.getBoundingClientRect().width);
-
-      // status.scrollWidth gives the width needed to display the status without truncation
       const statusW = Math.ceil(status.scrollWidth);
-
-  // extra buffer so it doesn't touch edges
-  const buffer = 90;
+      const buffer = 90;
 
       let required = padLeft + backW + gap + statusW + padRight + buffer;
 
-      // enforce sensible min/max (match CSS limits)
       const maxAllowed = Math.min(window.innerWidth * 0.95, 1000);
-      const minAllowed = 320; // don't go too small
+      const minAllowed = 320;
 
       if (required < minAllowed) required = minAllowed;
 
       if (required > maxAllowed) {
-        // cannot fit everything in bounds: cap width and allow status to wrap
         container.style.width = maxAllowed + 'px';
         status.style.whiteSpace = 'normal';
         status.style.textOverflow = 'clip';
@@ -500,17 +495,14 @@
         status.style.textOverflow = 'ellipsis';
       }
 
-      // Position back button aligned with the left edge of the video element
       try {
         const containerRect = container.getBoundingClientRect();
         const videoRect = video.getBoundingClientRect();
 
         let leftOffset;
         if (videoRect && videoRect.width > 2) {
-          // if video has layout, align to its left edge
           leftOffset = Math.max(8, Math.round(videoRect.left - containerRect.left + 4));
         } else {
-          // fallback: compute centered video left based on container width and video max-width
           const videoMax = parseFloat(window.getComputedStyle(video).maxWidth) || container.clientWidth;
           const videoWidth = Math.min(container.clientWidth, videoMax);
           leftOffset = Math.max(8, Math.round((container.clientWidth - videoWidth) / 2) + 4);
@@ -522,35 +514,29 @@
       }
     }
 
-    // Run on load and on resize
     window.addEventListener('load', adjustContainerWidth);
     window.addEventListener('resize', () => {
-      // debounce resizing slightly
       clearTimeout(window._adjustContainerTimer);
       window._adjustContainerTimer = setTimeout(adjustContainerWidth, 120);
     });
 
-    // Observe status text changes (so dynamic status updates re-run sizing)
     const mo = new MutationObserver(adjustContainerWidth);
     mo.observe(status, { childList: true, characterData: true, subtree: true });
 
-    // initial adjust in case script runs after load
     adjustContainerWidth();
 
-  // re-adjust when the video element has metadata (dimensions) or plays
-  video.addEventListener('loadedmetadata', adjustContainerWidth);
-  video.addEventListener('play', adjustContainerWidth);
+    video.addEventListener('loadedmetadata', adjustContainerWidth);
+    video.addEventListener('play', adjustContainerWidth);
 
     async function startCamera() {
       try {
         showStatus('Requesting camera access...', 'status');
 
-        // Request camera access
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
             width: { ideal: 1280 },
             height: { ideal: 720 },
-            facingMode: 'environment' // Use back camera on mobile if available
+            facingMode: 'environment'
           },
           audio: false
         });
@@ -593,7 +579,6 @@
       analyzeBtn.style.display = 'none';
       mealPlanBtn.style.display = 'none';
 
-      // Hide captured content
       capturedImage.style.display = 'none';
       analysisSection.style.display = 'none';
       currentImageData = null;
@@ -604,26 +589,20 @@
     function capturePhoto() {
       if (!stream) return;
 
-      // Set canvas dimensions to match video
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
 
-      // Draw the video frame to canvas
       context.drawImage(video, 0, 0);
 
-      // Convert canvas to image data URL
       currentImageData = canvas.toDataURL('image/png');
 
-      // Display the captured image
       capturedImage.src = currentImageData;
       capturedImage.style.display = 'block';
 
-      // Show analyze button
       analyzeBtn.style.display = 'inline-block';
 
       showStatus('Photo captured successfully! Click "Analyze Food" to identify ingredients.', 'success');
 
-      // Hide previous analysis
       analysisSection.style.display = 'none';
       mealPlanBtn.style.display = 'none';
     }
@@ -634,7 +613,6 @@
         return;
       }
 
-      // Show loading state
       analyzeBtn.disabled = true;
       analyzeBtn.innerHTML = '<div class="spinner"></div>Analyzing...';
       showStatus('🔍 Analyzing your food image...', 'loading');
@@ -697,17 +675,14 @@
 
         showStatus(errorMessage, 'error');
       } finally {
-        // Reset analyze button
         analyzeBtn.disabled = false;
         analyzeBtn.innerHTML = '🔍 Analyze Food';
       }
     }
 
     function displayResults(ingredientsText) {
-      // Show the full response
       rawResponse.textContent = ingredientsText;
 
-      // Parse ingredients into a list
       const ingredients = parseIngredients(ingredientsText);
       detectedIngredients = ingredients.map(name => ({
         name: name.toLowerCase().trim(),
@@ -715,11 +690,9 @@
         emoji: getIngredientEmoji(name.toLowerCase().trim())
       }));
 
-      // Clear previous results
       ingredientsList.innerHTML = '';
       selectedIngredients = [];
 
-      // Add each ingredient as a clickable list item
       detectedIngredients.forEach((ingredient, index) => {
         const li = document.createElement('li');
         li.textContent = ingredient.displayName;
@@ -731,16 +704,13 @@
 
       updateSelectionCount();
 
-      // Show the results section and meal plan button
       analysisSection.style.display = 'block';
       mealPlanBtn.style.display = 'inline-block';
     }
 
     function parseIngredients(text) {
-      // Try to extract ingredients from the GPT response
       const ingredients = [];
 
-      // Split by common delimiters and clean up
       const lines = text.split(/[\n\r•\-\*]/);
 
       lines.forEach(line => {
@@ -752,10 +722,8 @@
             !cleaned.toLowerCase().includes('appears to') &&
             cleaned.length > 2) {
 
-          // Remove numbering (1., 2., etc.)
           const withoutNumbers = cleaned.replace(/^\d+\.?\s*/, '');
 
-          // Remove common prefixes
           const withoutPrefixes = withoutNumbers
             .replace(/^(ingredients?:?|contains?:?)\s*/i, '')
             .replace(/^-\s*/, '');
@@ -766,7 +734,6 @@
         }
       });
 
-      // If we didn't find structured ingredients, try comma-separated
       if (ingredients.length === 0) {
         const commaSplit = text.split(',');
         commaSplit.forEach(item => {
@@ -777,7 +744,6 @@
         });
       }
 
-      // Fallback: if still no ingredients, just show the full text as one item
       if (ingredients.length === 0) {
         ingredients.push(text.trim());
       }
@@ -786,19 +752,17 @@
     }
 
     function getIngredientEmoji(ingredientName) {
-      // Check for exact matches first
       if (ingredientEmojis[ingredientName]) {
         return ingredientEmojis[ingredientName];
       }
 
-      // Check for partial matches
       for (const key in ingredientEmojis) {
         if (ingredientName.includes(key) || key.includes(ingredientName)) {
           return ingredientEmojis[key];
         }
       }
 
-      return '🥘'; // Default emoji
+      return '🥘';
     }
 
     function toggleIngredient(index) {
@@ -806,11 +770,9 @@
       const ingredient = detectedIngredients[index];
 
       if (selectedIngredients.some(item => item.name === ingredient.name)) {
-        // Remove from selected
         selectedIngredients = selectedIngredients.filter(item => item.name !== ingredient.name);
         li.classList.remove('selected');
       } else {
-        // Add to selected
         selectedIngredients.push(ingredient);
         li.classList.add('selected');
       }
@@ -828,26 +790,21 @@
         return;
       }
 
-      // Store selected ingredients for the meal plan page
       const ingredientsData = selectedIngredients.map(ing => ({
         name: ing.displayName,
         emoji: ing.emoji
       }));
 
-      // Debug: Log the data being passed
       console.log('Selected ingredients:', ingredientsData);
 
-      // Navigate to meal plan page with ingredients
       try {
         const ingredientsParam = encodeURIComponent(JSON.stringify(ingredientsData));
         const targetUrl = `mealplan.html?ingredients=${ingredientsParam}`;
 
         console.log('Navigating to:', targetUrl);
 
-        // Try multiple navigation methods
         window.location.assign(targetUrl);
 
-        // Fallback after a short delay
         setTimeout(() => {
           if (window.location.href.indexOf('mealplan.html') === -1) {
             console.log('First method failed, trying window.location.href');
@@ -866,7 +823,6 @@
       status.className = `status ${type}`;
     }
 
-    // Handle page visibility changes (stop camera when page is hidden)
     document.addEventListener('visibilitychange', () => {
       if (document.hidden && stream) {
         stopCamera();
