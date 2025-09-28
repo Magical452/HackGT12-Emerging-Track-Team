@@ -127,6 +127,55 @@
 
     .recipes-section {
       margin-bottom: 30px;
+      position: relative; /* allow absolute children (hearts) to be positioned relative to this section */
+    }
+
+    /* Decorative background hearts */
+    .bg-heart-left,
+    .bg-heart-right {
+      position: absolute;
+      /* position them vertically centered relative to the recipes grid */
+      top: 60%;
+      font-size: 260px; /* larger baseline */
+      line-height: 1;
+      pointer-events: none;
+      opacity: 0.10; /* slightly more visible by default */
+      transform: translateY(-50%);
+      filter: drop-shadow(0 16px 40px rgba(0,0,0,0.18));
+      will-change: transform, opacity;
+      z-index: 1; /* behind cards which are z-index >= 1000 */
+      user-select: none;
+    }
+
+    .bg-heart-left {
+      left: -120px; /* sit just outside the left edge of the recipes grid */
+      text-align: left;
+      transform: translateY(-50%) rotate(-8deg);
+      opacity: 0.09;
+      transition: transform 380ms cubic-bezier(.2,.9,.3,1), opacity 380ms ease;
+      transform-origin: center center;
+    }
+
+    .bg-heart-right {
+      right: -120px; /* sit just outside the right edge of the recipes grid */
+      text-align: right;
+      transform: translateY(-50%) rotate(8deg);
+      opacity: 0.09;
+      transition: transform 380ms cubic-bezier(.2,.9,.3,1), opacity 380ms ease;
+      transform-origin: center center;
+    }
+
+    /* Active state when a swipe happens: grow and increase opacity */
+    .bg-heart-left.bg-heart-animate {
+      transform: translateY(-50%) rotate(-8deg) scale(1.6);
+      opacity: 0.55;
+      filter: drop-shadow(0 22px 60px rgba(0,0,0,0.22));
+    }
+
+    .bg-heart-right.bg-heart-animate {
+      transform: translateY(-50%) rotate(8deg) scale(1.6);
+      opacity: 0.55;
+      filter: drop-shadow(0 22px 60px rgba(0,0,0,0.22));
     }
 
     /* Stack mode: cards positioned on top of each other so user can swipe through */
@@ -152,6 +201,20 @@
       cursor: grab;
       touch-action: pan-y;
       display: block;
+    }
+
+    /* Swipe emoji animation (floating + fade) */
+    .swipe-emoji {
+      position: absolute;
+      pointer-events: none;
+      font-size: 48px;
+      opacity: 0;
+      transform: translateY(0) scale(0.8);
+      transition: transform 420ms cubic-bezier(.2,.9,.3,1), opacity 420ms ease;
+      z-index: 10050; /* above cards when shown */
+      text-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      will-change: transform, opacity;
+      display: inline-block;
     }
 
     .stack-card:active {
@@ -381,6 +444,12 @@
       .back-btn {
         display: none !important;
       }
+
+      /* Hide large decorative hearts on small screens */
+      .bg-heart-left,
+      .bg-heart-right {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -421,6 +490,9 @@
     </div>
 
     <div id="recipesSection" class="recipes-section" style="display: none;">
+      <!-- Decorative background hearts (left: broken heart, right: shining heart) -->
+      <div class="bg-heart-left">💔</div>
+      <div class="bg-heart-right">💖</div>
       <h2 class="ingredients-title">🍳 Recommended Recipes</h2>
       <div id="recipesGrid" class="recipes-grid">
         <!-- Recipes will be populated here -->
@@ -435,7 +507,7 @@
   <script>
     // Replace with your Spoonacular API key
 
-    const SPOONACULAR_API_KEY = '140f9ddf755e480d8c6ce473d447be89';
+    const SPOONACULAR_API_KEY = 'a7706306d08c44a6879c514515343121';
     const OPENAI_API_KEY = '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';
 
     let currentIngredients = [];
@@ -656,6 +728,8 @@
     // Helper to animate and remove a specific card to a given side
     function removeCard(card, direction = 'left') {
       if (!card) return;
+      // show swipe emoji (left => broken heart, right => shining heart)
+      showSwipeEmoji(direction, card);
       card.style.transition = 'transform 0.35s ease, opacity 0.35s ease';
       if (direction === 'right') {
         card.style.transform = 'translateX(120%) rotate(12deg)';
@@ -667,6 +741,60 @@
         if (card && card.parentNode) card.parentNode.removeChild(card);
         initializeCardStack();
       }, 360);
+    }
+
+    // show a floating emoji near the card when swiped
+    function showSwipeEmoji(direction, card) {
+      try {
+        // also animate the large background heart for stronger feedback
+        animateBgHeart(direction);
+
+        const section = document.querySelector('.recipes-section') || document.body;
+        const emoji = document.createElement('div');
+        emoji.className = 'swipe-emoji';
+        emoji.textContent = direction === 'right' ? '💖' : '💔';
+
+        // position near the card (centered horizontally, slightly above)
+        const cardRect = card.getBoundingClientRect();
+        const sectionRect = section.getBoundingClientRect();
+        const left = cardRect.left - sectionRect.left + (cardRect.width / 2) - 24; // center - half emoji
+        const top = cardRect.top - sectionRect.top + 20; // slightly above the card
+
+        emoji.style.left = `${left}px`;
+        emoji.style.top = `${top}px`;
+
+        // append and animate
+        section.appendChild(emoji);
+
+        // force layout then animate
+        requestAnimationFrame(() => {
+          emoji.style.opacity = '1';
+          emoji.style.transform = 'translateY(-48px) scale(1.25)';
+        });
+
+        // remove after animation
+        setTimeout(() => {
+          emoji.style.opacity = '0';
+          emoji.style.transform = 'translateY(-80px) scale(0.9)';
+          setTimeout(() => { try { emoji.remove(); } catch(e){} }, 400);
+        }, 520);
+      } catch (e) {
+        // ignore positioning errors
+      }
+    }
+
+    // briefly grow and brighten the background heart on the swiped side
+    function animateBgHeart(direction) {
+      try {
+        const cls = direction === 'right' ? '.bg-heart-right' : '.bg-heart-left';
+        const el = document.querySelector(cls);
+        if (!el) return;
+  el.classList.add('bg-heart-animate');
+  // remove after the animation duration (longer so it feels impactful)
+  setTimeout(() => el.classList.remove('bg-heart-animate'), 800);
+      } catch (e) {
+        // ignore
+      }
     }
 
     function viewRecipe(recipeId) {
@@ -772,9 +900,8 @@
           if (isMobile) {
             expandCard(card);
           } else {
-            const url = card.dataset.recipeUrl;
-            if (url) window.open(url, '_blank');
-            removeCard(card, 'right');
+            // On desktop, expand the card in-place (do not navigate away)
+            expandCard(card);
           }
         } else {
           // reset position
