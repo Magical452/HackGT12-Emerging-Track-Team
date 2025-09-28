@@ -11,9 +11,16 @@
       box-sizing: border-box;
     }
 
+    html {
+      height: 100%;
+      background: linear-gradient(135deg, #FFC5CF 0%, #BF808B 100%);
+      background-attachment: fixed;
+      background-size: cover;
+    }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #FFC5CF 0%, #BF808B 100%);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -23,25 +30,41 @@
     }
 
     .camera-container {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(12px);
       border-radius: 20px;
-      padding: 30px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-      max-width: 90vw;
-      max-height: 90vh;
+      padding: 24px 28px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+  /* balanced container width: large enough but not huge */
+  width: min(92vw, 1000px);
+  max-width: 1000px;
+      max-height: 92vh;
       display: flex;
       flex-direction: column;
       align-items: center;
+      position: relative; /* allow absolute children like the back button */
     }
 
     #video {
       width: 100%;
-      max-width: 640px;
+      max-width: 900px; /* moderate video area */
       height: auto;
       border-radius: 15px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.3);
       background: #000;
+    }
+
+    /* Responsive: keep it compact on small screens */
+    @media (max-width: 480px) {
+      .camera-container { max-width: 90vw; padding: 18px; }
+      #video { max-width: 100%; }
+      .status { max-width: 80%; }
+    }
+
+    /* On very large screens, constrain the video width proportionally */
+    @media (min-width: 1600px) {
+      #video { max-width: 1400px; }
+      .camera-container { max-width: 1500px; }
     }
 
     .controls {
@@ -50,6 +73,63 @@
       gap: 15px;
       flex-wrap: wrap;
       justify-content: center;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 16px;
+      padding: 0 32px; /* horizontal spacing preserved; vertical padding handled by container */
+      width: 100%;
+      position: static; /* keep container as the positioned ancestor */
+      height: 56px; /* fixed header height to keep vertical alignment consistent */
+    }
+
+    .back-btn {
+      background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute; /* position relative to .camera-container */
+      left: 12px; /* small inset from the container left edge */
+      top: 24px; /* align with header vertical position */
+    }
+
+    .back-btn:hover {
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    .back-btn:focus {
+      outline: 3px solid rgba(108,92,231,0.35);
+      outline-offset: 3px;
+    }
+
+    .status {
+      /* center visually without affecting flow so back button won't overlap */
+      position: absolute;
+      left: 50%;
+      top: 24px; /* align with the back button */
+      transform: translateX(-50%);
+      max-width: 80%;
+      text-align: center;
+      margin: 0;
+      font-size: 18px;
+      /* default to truncation; JS will enable wrapping if container capped */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
     }
 
     .btn {
@@ -92,15 +172,25 @@
       background: linear-gradient(45deg, #6c5ce7, #a29bfe);
     }
 
-    .btn.meal-plan {
-      background: linear-gradient(45deg, #fd79a8, #e84393);
+
+    /* Make the primary start button match the purple/blue theme */
+    #startBtn {
+      background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+    }
+
+    #startBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.28);
     }
 
     .status {
       margin-bottom: 20px;
-      padding: 10px 20px;
+      padding: 6px 8px;
       border-radius: 8px;
+      font-weight: bold;
       background: rgba(255, 255, 255, 0.2);
+      color: #6c5ce7;
       text-align: center;
     }
 
@@ -243,23 +333,35 @@
       .btn {
         width: 100%;
       }
+      
+      /* On mobile, allow the background to scroll with content for smoother performance */
+      html {
+        background-attachment: scroll;
+      }
     }
   </style>
 </head>
 <body>
   <div class="camera-container">
-    <div id="status" class="status">Click "Start Camera" to begin</div>
+
+    <div class="header-row">
+      <button id="backBtn" class="back-btn" aria-label="Go back">⬅</button>
+      <div id="status" class="status">Click "Turn On Camera" to begin</div>
+    </div>
 
     <video id="video" autoplay playsinline></video>
     <canvas id="canvas"></canvas>
 
     <div class="controls">
-      <button id="startBtn" class="btn">📷 Start Camera</button>
+      <button id="startBtn" class="btn">📷 Turn On Camera</button>
       <button id="stopBtn" class="btn stop" style="display: none;">⏹️ Stop Camera</button>
       <button id="captureBtn" class="btn capture" style="display: none;">📸 Capture Photo</button>
+
+      <!-- <button id="backBtn" class="btn back">⬅️ Back to Main</button> commented out bc the back button I added isn't working and this is the old one-->
+
       <button id="analyzeBtn" class="btn analyze" style="display: none;">🔍 Analyze Food</button>
       <button id="mealPlanBtn" class="btn meal-plan" style="display: none;">🍽️ Create Meal Plan</button>
-      <button id="backBtn" class="btn back">⬅️ Back to Main</button>
+
     </div>
 
     <img id="capturedImage" class="captured-image" style="display: none;" />
@@ -289,6 +391,7 @@
     const startBtn = document.getElementById('startBtn');
     const stopBtn = document.getElementById('stopBtn');
     const captureBtn = document.getElementById('captureBtn');
+    // backBtn element is defined in the markup with id="backBtn"
     const analyzeBtn = document.getElementById('analyzeBtn');
     const mealPlanBtn = document.getElementById('mealPlanBtn');
     const backBtn = document.getElementById('backBtn');
@@ -355,6 +458,88 @@
     backBtn.addEventListener('click', () => {
       window.location.href = 'index.html';
     });
+
+    // Adjust camera container width so back button + status/title fit on one line
+    const container = document.querySelector('.camera-container');
+
+    function adjustContainerWidth() {
+      if (!container || !backBtn || !status) return;
+
+      const computed = window.getComputedStyle(container);
+      const padLeft = parseFloat(computed.paddingLeft) || 0;
+      const padRight = parseFloat(computed.paddingRight) || 0;
+
+      // gap between back button and status (header-row gap)
+      const headerRow = document.querySelector('.header-row');
+      const gap = headerRow ? parseFloat(window.getComputedStyle(headerRow).gap) || 16 : 16;
+
+      const backW = Math.ceil(backBtn.getBoundingClientRect().width);
+
+      // status.scrollWidth gives the width needed to display the status without truncation
+      const statusW = Math.ceil(status.scrollWidth);
+
+  // extra buffer so it doesn't touch edges
+  const buffer = 90;
+
+      let required = padLeft + backW + gap + statusW + padRight + buffer;
+
+      // enforce sensible min/max (match CSS limits)
+      const maxAllowed = Math.min(window.innerWidth * 0.95, 1000);
+      const minAllowed = 320; // don't go too small
+
+      if (required < minAllowed) required = minAllowed;
+
+      if (required > maxAllowed) {
+        // cannot fit everything in bounds: cap width and allow status to wrap
+        container.style.width = maxAllowed + 'px';
+        status.style.whiteSpace = 'normal';
+        status.style.textOverflow = 'clip';
+      } else {
+        container.style.width = required + 'px';
+        status.style.whiteSpace = 'nowrap';
+        status.style.textOverflow = 'ellipsis';
+      }
+
+      // Position back button aligned with the left edge of the video element
+      try {
+        const containerRect = container.getBoundingClientRect();
+        const videoRect = video.getBoundingClientRect();
+
+        let leftOffset;
+        if (videoRect && videoRect.width > 2) {
+          // if video has layout, align to its left edge
+          leftOffset = Math.max(8, Math.round(videoRect.left - containerRect.left + 4));
+        } else {
+          // fallback: compute centered video left based on container width and video max-width
+          const videoMax = parseFloat(window.getComputedStyle(video).maxWidth) || container.clientWidth;
+          const videoWidth = Math.min(container.clientWidth, videoMax);
+          leftOffset = Math.max(8, Math.round((container.clientWidth - videoWidth) / 2) + 4);
+        }
+
+        backBtn.style.left = leftOffset + 'px';
+      } catch (e) {
+        // ignore measurement errors
+      }
+    }
+
+    // Run on load and on resize
+    window.addEventListener('load', adjustContainerWidth);
+    window.addEventListener('resize', () => {
+      // debounce resizing slightly
+      clearTimeout(window._adjustContainerTimer);
+      window._adjustContainerTimer = setTimeout(adjustContainerWidth, 120);
+    });
+
+    // Observe status text changes (so dynamic status updates re-run sizing)
+    const mo = new MutationObserver(adjustContainerWidth);
+    mo.observe(status, { childList: true, characterData: true, subtree: true });
+
+    // initial adjust in case script runs after load
+    adjustContainerWidth();
+
+  // re-adjust when the video element has metadata (dimensions) or plays
+  video.addEventListener('loadedmetadata', adjustContainerWidth);
+  video.addEventListener('play', adjustContainerWidth);
 
     async function startCamera() {
       try {
