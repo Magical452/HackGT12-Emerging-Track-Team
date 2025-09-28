@@ -13,7 +13,7 @@
 
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #FFC5CF 0%, #BF808B 100%);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -41,7 +41,7 @@
       font-weight: 700;
       margin-bottom: 30px;
       text-align: center;
-      background: linear-gradient(45deg, #ff6b6b, #feca57);
+      background: #9e3737;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -241,7 +241,25 @@
 }
 
 .back-btn {
-  flex: 1;
+  background: transparent;
+  color: #3b241a;
+  border: 1px solid #3b241a;
+  padding: 0px 8px;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  align-self: flex-start;
+  margin-left: 0;
+  
+}
+    
+.back-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
 }
 
 .ingredient-count {
@@ -255,6 +273,7 @@
 </head>
 <body>
   <div class="container">
+    <button class="back-btn" onclick="goBack()">⬅</button>
     <h1 class="title">🥬 Search Ingredients</h1>
 
     <div class="search-section">
@@ -276,7 +295,6 @@
     🍽️ Create Meal Plan
     <span class="ingredient-count" id="ingredientCount">(0 ingredients)</span>
   </button>
-  <button class="back-btn" onclick="goBack()">⬅️ Back</button>
 </div>
 
   <script>

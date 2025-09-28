@@ -13,9 +13,9 @@
 
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #BF808B 0%, #FFC5CF 100%);
       min-height: 100vh;
-      color: white;
+      color: black;
       padding: 20px;
     }
 
@@ -33,7 +33,7 @@
       font-size: 3rem;
       font-weight: 700;
       margin-bottom: 10px;
-      background: linear-gradient(45deg, #ff6b6b, #feca57);
+      background: linear-gradient(45deg, black, #3b241a, black);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -43,6 +43,7 @@
       font-size: 1.2rem;
       opacity: 0.8;
       margin-bottom: 30px;
+      color: black;
     }
 
     .ingredients-section {
@@ -87,7 +88,7 @@
     }
 
     .search-btn {
-      background: linear-gradient(45deg, #00b894, #00a085);
+      background: linear-gradient(45deg, #b84d52, #9e474b);
       color: white;
       border: none;
       padding: 12px 24px;
@@ -212,19 +213,18 @@
     }
 
     .back-btn {
-      background: linear-gradient(45deg, #6c5ce7, #a29bfe);
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      font-size: 16px;
+      background: transparent;
+      color: #3b241a;
+      border: 1px solid #3b241a;
+      padding: 0px 8px;
+      font-size: 24px;
       font-weight: 600;
+      line-height: 1;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.3s ease;
       box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
+      
     }
 
     .back-btn:hover {
@@ -269,9 +269,11 @@
 </head>
 <body>
   <div class="container">
+    <button class="back-btn" onclick="goBack()">⬅</button>
+
     <div class="header">
-      <h1 class="title">🍽️ Your Meal Plan</h1>
-      <p class="subtitle">Let's create delicious meals with your ingredients!</p>
+      <h1 class="title">🍽️ Find Your Soulplate</h1>
+      <p class="subtitle">Swipe to find love!</p>
     </div>
 
     <div class="ingredients-section">
@@ -307,13 +309,11 @@
         <!-- Recipes will be populated here -->
       </div>
     </div>
-
-    <button class="back-btn" onclick="goBack()">⬅️ Back</button>
   </div>
 
   <script>
     // Replace with your Spoonacular API key
-    const SPOONACULAR_API_KEY = 'c4f5697c8ecc401990c0f03386d913e7';
+    const SPOONACULAR_API_KEY = 'blahblahyouthoughtlmao';
 
     let currentIngredients = [];
     let foundRecipes = [];
