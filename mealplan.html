@@ -338,8 +338,10 @@
 
   <script>
     // Replace with your Spoonacular API key
-    const SPOONACULAR_API_KEY = '140f9ddf755e480d8c6ce473d447be89';
-    const OPENAI_API_KEY = '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';
+
+    // const SPOONACULAR_API_KEY = '140f9ddf755e480d8c6ce473d447be89';
+    // const OPENAI_API_KEY = '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';
+
 
     let currentIngredients = [];
     let foundRecipes = [];
@@ -347,6 +349,10 @@
     let isLoadingMore = false;
     let hasMoreRecipes = true;
 
+    function showStatus(message, type) {
+      status.textContent = message;
+      status.className = `status ${type}`;
+    }
     // Get ingredients from URL parameters or localStorage
     function getIngredients() {
       // Try URL parameters first (from camera page)
@@ -410,7 +416,45 @@
       recipesSection.style.display = 'none';
       errorMessage.style.display = 'none';
       currentOffset = 0;
+// openAI API
+      try {
+        const ingredientNames = currentIngredients.map(ing => ing.name).join(',');
+        const url = 'https://api.openai.com/v1/chat/completions';
 
+        const response = await fetch( url, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}`},
+            body: JSON.stringify({
+              model: 'gpt-4o-mini', 
+              messages: [{role: 'user', content: [{type: 'text', text: ingredientNames}, {type: 'text', text: "Analyze these ingredients, Give me a recipe with just these ingredients."}]}], 
+              max_tokens: 300, temperature: 0.3})});
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(`API Error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+        }
+
+        const recipes = await response.json();
+        const recipe = recipes.choices[0].message.content
+        console.log(recipe)
+
+        } catch (error) {
+          console.error('Error analyzing food:', error);
+
+          let errorMessage = 'Failed to analyze food. ';
+          if (error.message.includes('401')) {
+            errorMessage += 'Invalid API key. Please check your OpenAI API key.';
+          } else if (error.message.includes('429')) {
+            errorMessage += 'Rate limit exceeded. Please try again later.';
+          } else if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
+            errorMessage += 'Network error. Please check your internet connection.';
+          } else {
+            errorMessage += error.message;
+          }
+
+        showStatus(errorMessage, 'error');
+      }
+// spoonacular API
       try {
         const ingredientNames = currentIngredients.map(ing => ing.name).join(',');
         const url = `https://api.spoonacular.com/recipes/findByIngredients?apiKey=${SPOONACULAR_API_KEY}&ingredients=${encodeURIComponent(ingredientNames)}&number=6&ranking=2&ignorePantry=false`;
@@ -490,6 +534,15 @@
         recipesGrid.innerHTML = '';
       }
 
+      for (const recipe of recipes) {
+        const recipeCard = createRecipeCard(recipe);
+        recipesGrid.appendChild(recipeCard);
+      }
+    }
+
+    async function displayRecipes(recipes) {
+      const recipesGrid = document.getElementById('recipiesGrid');
+      recipesGrid.innerHTML = ' ';
       for (const recipe of recipes) {
         const recipeCard = createRecipeCard(recipe);
         recipesGrid.appendChild(recipeCard);
